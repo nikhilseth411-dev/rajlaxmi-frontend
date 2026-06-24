@@ -1,0 +1,1190 @@
+.adminLoginPage {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #2d1608, #7a4b17, #f7e3b0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+}
+
+.adminLoginCard {
+  width: min(100%, 440px);
+  background: #fffaf0;
+  border: 1px solid rgba(146, 96, 24, 0.25);
+  box-shadow: 0 24px 80px rgba(45, 22, 8, 0.28);
+  padding: 34px;
+}
+
+.adminLoginBrand {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.adminLoginBrand img {
+  width: 88px;
+  height: 88px;
+  object-fit: contain;
+  margin-bottom: 10px;
+}
+
+.adminLoginBrand p {
+  margin: 0;
+  color: #8a5a18;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.adminLoginBrand h1 {
+  margin: 8px 0;
+  color: #4b260c;
+  font-size: 34px;
+}
+
+.adminLoginBrand span {
+  color: #7a6a55;
+  font-size: 14px;
+}
+
+.adminLoginForm {
+  display: grid;
+  gap: 18px;
+}
+
+.adminLoginForm label {
+  display: grid;
+  gap: 8px;
+  color: #4b260c;
+  font-weight: 700;
+}
+
+.adminLoginForm input {
+  border: 1px solid rgba(122, 75, 23, 0.25);
+  padding: 14px;
+  font-size: 15px;
+  background: white;
+  outline: none;
+}
+
+.adminLoginForm input:focus {
+  border-color: #b8860b;
+}
+
+.adminLoginForm button,
+.adminLogout {
+  border: none;
+  background: linear-gradient(135deg, #8a5a18, #d6a832);
+  color: white;
+  padding: 14px 18px;
+  font-weight: 800;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.adminLoginForm button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.adminError {
+  background: #ffe8e8;
+  color: #a40000;
+  padding: 10px;
+  margin: 0;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.adminPage {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 290px 1fr;
+  background: #f8f0e4;
+}
+
+.adminSidebar {
+  background: #2d1608;
+  color: white;
+  padding: 28px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.adminLogoBox {
+  text-align: center;
+}
+
+.adminLogoBox img {
+  width: 88px;
+  height: 88px;
+  object-fit: contain;
+  background: white;
+  padding: 8px;
+  margin-bottom: 12px;
+}
+
+.adminLogoBox h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.adminLogoBox p {
+  color: #e5c879;
+  margin: 6px 0 0;
+}
+
+.adminMenu {
+  display: grid;
+  gap: 10px;
+}
+
+.adminMenu a {
+  color: white;
+  text-decoration: none;
+  padding: 13px 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border-left: 3px solid transparent;
+}
+
+.adminMenu a:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-left-color: #d6a832;
+}
+
+.adminLogout {
+  margin-top: auto;
+}
+
+.adminMain {
+  padding: 34px;
+}
+
+.adminTopbar {
+  background: white;
+  border: 1px solid rgba(122, 75, 23, 0.16);
+  padding: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 14px 40px rgba(45, 22, 8, 0.08);
+}
+
+.adminTopbar p {
+  margin: 0;
+  color: #8a5a18;
+  font-weight: 800;
+}
+
+.adminTopbar h1 {
+  margin: 6px 0 0;
+  color: #3b1c09;
+  font-size: 34px;
+}
+
+.adminTopbar span {
+  background: #fff3cf;
+  color: #7a4b17;
+  padding: 10px 14px;
+  font-weight: 800;
+}
+
+.adminCards {
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+.adminCard {
+  background: white;
+  border: 1px solid rgba(122, 75, 23, 0.16);
+  padding: 28px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 14px 40px rgba(45, 22, 8, 0.08);
+}
+
+.adminCard h3 {
+  margin: 0 0 12px;
+  color: #4b260c;
+  font-size: 24px;
+}
+
+.adminCard p {
+  margin: 0;
+  color: #6d604f;
+  line-height: 1.6;
+}
+
+.adminCard:hover {
+  transform: translateY(-3px);
+}
+
+@media (max-width: 980px) {
+  .adminPage {
+    grid-template-columns: 1fr;
+  }
+
+  .adminSidebar {
+    min-height: auto;
+  }
+
+  .adminCards {
+    grid-template-columns: 1fr;
+  }
+
+  .adminTopbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+}
+
+.adminBackLink {
+  background: #fff3cf;
+  color: #7a4b17;
+  padding: 12px 16px;
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.goldRateLayout {
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.goldRateCard {
+  background: white;
+  border: 1px solid rgba(122, 75, 23, 0.16);
+  padding: 28px;
+  box-shadow: 0 14px 40px rgba(45, 22, 8, 0.08);
+}
+
+.goldRateCard h2 {
+  margin: 0 0 18px;
+  color: #4b260c;
+  font-size: 28px;
+}
+
+.adminMuted {
+  color: #6d604f;
+  line-height: 1.6;
+}
+
+.rateBoxes {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.rateBox {
+  background: #fff7df;
+  border: 1px solid rgba(122, 75, 23, 0.16);
+  padding: 18px;
+  display: grid;
+  gap: 6px;
+}
+
+.rateBox span {
+  color: #7a4b17;
+  font-weight: 800;
+}
+
+.rateBox strong {
+  font-size: 30px;
+  color: #3b1c09;
+}
+
+.rateBox small {
+  color: #7a6a55;
+}
+
+.adminForm {
+  display: grid;
+  gap: 18px;
+}
+
+.adminForm label {
+  display: grid;
+  gap: 8px;
+  color: #4b260c;
+  font-weight: 800;
+}
+
+.adminForm input,
+.adminForm select,
+.adminForm textarea {
+  border: 1px solid rgba(122, 75, 23, 0.25);
+  padding: 14px;
+  font-size: 15px;
+  background: white;
+  outline: none;
+}
+
+.adminForm textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.adminForm input:focus,
+.adminForm select:focus,
+.adminForm textarea:focus {
+  border-color: #b8860b;
+}
+
+.adminForm button {
+  border: none;
+  background: linear-gradient(135deg, #8a5a18, #d6a832);
+  color: white;
+  padding: 14px 18px;
+  font-weight: 800;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.adminSuccess {
+  background: #e7ffe9;
+  color: #087a1f;
+  padding: 10px;
+  margin: 0;
+  font-weight: 800;
+}
+
+.adminDangerBtn {
+  border: none;
+  background: #9b1c1c;
+  color: white;
+  padding: 13px 16px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+@media (max-width: 980px) {
+  .goldRateLayout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.productAdminForm {
+  margin-top: 28px;
+  display: grid;
+  gap: 24px;
+}
+
+.adminFormSection {
+  background: white;
+  border: 1px solid rgba(122, 75, 23, 0.16);
+  padding: 28px;
+  box-shadow: 0 14px 40px rgba(45, 22, 8, 0.08);
+}
+
+.adminFormSection h2 {
+  margin: 0 0 20px;
+  color: #4b260c;
+  font-size: 26px;
+}
+
+.adminFormGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.adminFormGrid label {
+  display: grid;
+  gap: 8px;
+  color: #4b260c;
+  font-weight: 800;
+}
+
+.adminFormGrid input,
+.adminFormGrid select,
+.adminFormGrid textarea {
+  border: 1px solid rgba(122, 75, 23, 0.25);
+  padding: 14px;
+  font-size: 15px;
+  background: white;
+  outline: none;
+}
+
+.adminFormGrid textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.adminFormGrid input:focus,
+.adminFormGrid select:focus,
+.adminFormGrid textarea:focus {
+  border-color: #b8860b;
+}
+
+.fullWidth {
+  grid-column: 1 / -1;
+}
+
+.skuRow {
+  display: grid;
+  grid-template-columns: 1fr 130px;
+  gap: 10px;
+}
+
+.skuRow button {
+  border: none;
+  background: #4b260c;
+  color: white;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.checkboxGrid {
+  margin-top: 22px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.checkboxGrid label {
+  background: #fff7df;
+  border: 1px solid rgba(122, 75, 23, 0.16);
+  padding: 14px;
+  color: #4b260c;
+  font-weight: 800;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.adminSubmitBtn {
+  border: none;
+  background: linear-gradient(135deg, #8a5a18, #d6a832);
+  color: white;
+  padding: 16px 22px;
+  font-weight: 900;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.adminSubmitBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@media (max-width: 980px) {
+
+  .adminFormGrid,
+  .checkboxGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .skuRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8efe2, #fffaf1);
+  padding: 40px 24px;
+  color: #3b1708;
+}
+
+.admin-card {
+  max-width: 850px;
+  margin: 0 auto;
+  background: #fffdf8;
+  border: 1px solid rgba(122, 74, 24, 0.18);
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: 0 14px 35px rgba(59, 23, 8, 0.12);
+}
+
+.admin-card h1 {
+  font-size: 34px;
+  margin-bottom: 8px;
+  color: #3b1708;
+}
+
+.admin-card p {
+  font-size: 16px;
+  margin-bottom: 20px;
+  color: #704015;
+}
+
+.admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-form label {
+  font-weight: 700;
+  color: #4a210b;
+}
+
+.admin-form input[type="file"],
+.admin-form input[type="text"],
+.admin-form input[type="number"],
+.admin-form select,
+.admin-form textarea {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid #dcc6a7;
+  border-radius: 12px;
+  background: #fffaf2;
+  color: #3b1708;
+  font-size: 15px;
+}
+
+.admin-form input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #b77a17;
+}
+
+.admin-form button,
+.admin-secondary-btn {
+  border: none;
+  border-radius: 12px;
+  padding: 13px 18px;
+  background: linear-gradient(135deg, #a86b12, #d6a52d);
+  color: white;
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.admin-form button:hover,
+.admin-secondary-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(168, 107, 18, 0.25);
+}
+
+.admin-form button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.admin-secondary-btn {
+  background: #4a210b;
+}
+
+.admin-success {
+  background: #e7ffe9;
+  border: 1px solid #7bd489;
+  color: #086b1f;
+  padding: 14px 16px;
+  border-radius: 12px;
+  margin-bottom: 18px;
+  font-weight: 700;
+}
+
+.admin-error {
+  background: #ffecec;
+  border: 1px solid #e38b8b;
+  color: #8a1111;
+  padding: 14px 16px;
+  border-radius: 12px;
+  margin-bottom: 18px;
+  font-weight: 700;
+}
+
+.admin-image-preview-box {
+  margin-top: 10px;
+  background: #fff7e8;
+  border: 1px dashed #c79b5d;
+  border-radius: 16px;
+  padding: 16px;
+  width: fit-content;
+}
+
+.admin-image-preview-box p {
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.admin-image-preview {
+  width: 240px;
+  height: 240px;
+  object-fit: contain;
+  background: white;
+  border-radius: 14px;
+  border: 1px solid #ead8bd;
+}
+
+.admin-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.admin-wide-card {
+  max-width: 1200px;
+}
+
+.admin-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+.admin-search-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.admin-search-row input {
+  padding: 13px 14px;
+  border: 1px solid #dcc6a7;
+  border-radius: 12px;
+  background: #fffaf2;
+  color: #3b1708;
+  font-size: 15px;
+}
+
+.admin-search-row button {
+  border: none;
+  border-radius: 12px;
+  padding: 13px 18px;
+  background: linear-gradient(135deg, #a86b12, #d6a52d);
+  color: white;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-empty-box {
+  background: #fff7e8;
+  border: 1px dashed #c79b5d;
+  padding: 24px;
+  border-radius: 16px;
+  text-align: center;
+  font-weight: 700;
+  color: #704015;
+}
+
+.admin-product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 18px;
+}
+
+.admin-product-card {
+  background: #fffaf2;
+  border: 1px solid #ead8bd;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(59, 23, 8, 0.08);
+}
+
+.admin-product-image {
+  width: 100%;
+  height: 260px;
+  object-fit: contain;
+  background: #ffffff;
+  border-bottom: 1px solid #ead8bd;
+}
+
+.admin-product-info {
+  padding: 18px;
+}
+
+.admin-product-info h3 {
+  font-size: 21px;
+  margin-bottom: 10px;
+  color: #3b1708;
+}
+
+.admin-product-info p {
+  margin: 6px 0;
+  color: #5a2a0d;
+}
+
+.admin-product-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.admin-product-badges span {
+  background: #fff0c7;
+  color: #7a4a18;
+  border: 1px solid #d6a52d;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.admin-product-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.admin-product-actions button {
+  flex: 1;
+  border: none;
+  border-radius: 12px;
+  padding: 11px 12px;
+  background: linear-gradient(135deg, #a86b12, #d6a52d);
+  color: white;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+@media (max-width: 700px) {
+  .admin-header-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-search-row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-product-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-grid-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.admin-full-field {
+  grid-column: 1 / -1;
+}
+
+.admin-grid-form textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.admin-checkbox-row {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: #fff7e8;
+  border: 1px solid #ead8bd;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.admin-checkbox-row label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 750px) {
+  .admin-grid-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 22px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fffaf2;
+  border: 1px solid #ead8bd;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 14px;
+  border-bottom: 1px solid #ead8bd;
+  text-align: left;
+  vertical-align: top;
+  color: #3b1708;
+}
+
+.admin-table th {
+  background: #fff0c7;
+  font-weight: 900;
+}
+
+.admin-table tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-status-pill {
+  display: inline-block;
+  background: #fff0c7;
+  color: #7a4a18;
+  border: 1px solid #d6a52d;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.admin-action-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 150px;
+}
+
+.admin-action-stack select,
+.admin-action-stack button {
+  border: 1px solid #dcc6a7;
+  border-radius: 10px;
+  padding: 9px 10px;
+  background: #fffaf2;
+  color: #3b1708;
+  font-weight: 800;
+}
+
+.admin-action-stack button {
+  border: none;
+  background: linear-gradient(135deg, #a86b12, #d6a52d);
+  color: white;
+  cursor: pointer;
+}
+
+.admin-action-stack button:disabled,
+.admin-action-stack select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-danger-btn {
+  background: linear-gradient(135deg, #8a1111, #d64545) !important;
+  color: white !important;
+}
+
+.adminDashboardPage {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  background: linear-gradient(135deg, #f8efe2, #fffaf1);
+  color: #3b1708;
+}
+
+.adminSidebar {
+  background: #351305;
+  color: white;
+  padding: 28px 22px;
+  min-height: 100vh;
+}
+
+.adminSidebarBrand {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.adminSidebarBrand img {
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+  background: white;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.adminSidebarBrand h2 {
+  margin: 14px 0 4px;
+  font-size: 24px;
+}
+
+.adminSidebarBrand p {
+  color: #f5d76e;
+  margin: 0;
+}
+
+.adminSidebarNav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.adminSidebarNav button {
+  border: none;
+  background: #4b2817;
+  color: white;
+  padding: 15px 18px;
+  border-radius: 0;
+  text-align: left;
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.adminSidebarNav button:hover {
+  background: #6d3a1f;
+}
+
+.adminLogoutBtn {
+  width: 100%;
+  margin-top: 28px;
+  border: none;
+  background: linear-gradient(135deg, #a86b12, #d6a52d);
+  color: white;
+  padding: 15px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.adminMainContent {
+  padding: 36px;
+}
+
+.adminWelcomeCard {
+  background: white;
+  border: 1px solid #ead8bd;
+  border-radius: 18px;
+  padding: 28px;
+  margin-bottom: 24px;
+  box-shadow: 0 12px 30px rgba(59, 23, 8, 0.08);
+}
+
+.adminWelcomeCard p {
+  color: #a86b12;
+  font-weight: 900;
+  margin: 0 0 8px;
+}
+
+.adminWelcomeCard h1 {
+  margin: 0 0 12px;
+  font-size: 34px;
+}
+
+.adminWelcomeCard span {
+  display: inline-block;
+  background: #fff0c7;
+  color: #7a4a18;
+  padding: 8px 14px;
+  font-weight: 900;
+}
+
+.adminStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.adminStatCard {
+  background: white;
+  border: 1px solid #ead8bd;
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 10px 26px rgba(59, 23, 8, 0.08);
+}
+
+.adminStatCard p {
+  margin: 0 0 10px;
+  color: #704015;
+  font-weight: 800;
+}
+
+.adminStatCard h2 {
+  margin: 0;
+  font-size: 30px;
+  color: #3b1708;
+}
+
+.adminQuickGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.adminQuickGrid button {
+  border: none;
+  border-radius: 14px;
+  padding: 15px 16px;
+  background: linear-gradient(135deg, #a86b12, #d6a52d);
+  color: white;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.adminQuickGrid button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(168, 107, 18, 0.25);
+}
+
+@media (max-width: 900px) {
+  .adminDashboardPage {
+    grid-template-columns: 1fr;
+  }
+
+  .adminSidebar {
+    min-height: auto;
+  }
+
+  .adminMainContent {
+    padding: 20px;
+  }
+}
+
+.customerStatus {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.customerStatusSuccess {
+  background: #e8ffe8;
+  color: #167316;
+}
+
+.customerStatusPending {
+  background: #fff3cd;
+  color: #8a5a00;
+}
+
+.customerStatusDanger {
+  background: #ffe5e5;
+  color: #a51919;
+}
+
+/* ================= ADMIN COUPONS FIX ================= */
+
+.adminCouponForm {
+  width: 100%;
+  margin-top: 20px;
+}
+
+.adminCouponGrid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(260px, 1fr)) !important;
+  gap: 18px 22px !important;
+  align-items: start;
+}
+
+.adminCouponGrid label {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  font-size: 14px;
+  font-weight: 900;
+  color: #351100;
+  line-height: 1.2;
+}
+
+.adminCouponGrid input,
+.adminCouponGrid select {
+  width: 100% !important;
+  height: 45px !important;
+  border: 1px solid #ead8c4 !important;
+  border-radius: 12px !important;
+  padding: 10px 13px !important;
+  font-size: 15px !important;
+  font-weight: 700;
+  outline: none !important;
+  background: #fffaf2 !important;
+  color: #351100 !important;
+  box-sizing: border-box;
+}
+
+.adminCouponGrid input:focus,
+.adminCouponGrid select:focus {
+  border-color: #8a3a0c !important;
+  box-shadow: 0 0 0 3px rgba(138, 58, 12, 0.12);
+}
+
+.adminCouponWide {
+  grid-column: 1 / -1 !important;
+}
+
+.adminCouponActions {
+  display: flex !important;
+  gap: 12px !important;
+  margin-top: 22px !important;
+  align-items: center;
+}
+
+.adminCouponActions button {
+  border: none !important;
+  background: #5b2108 !important;
+  color: white !important;
+  padding: 12px 20px !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+  font-weight: 900 !important;
+  cursor: pointer;
+}
+
+.adminCouponActions button:hover {
+  background: #8a3a0c !important;
+}
+
+.admin-secondary-btn {
+  border: none !important;
+  background: #5b2108 !important;
+  color: #fff !important;
+  padding: 10px 14px !important;
+  border-radius: 10px !important;
+  font-weight: 900 !important;
+  cursor: pointer;
+}
+
+.admin-secondary-btn:hover {
+  background: #8a3a0c !important;
+}
+
+.admin-danger-btn {
+  border: none !important;
+  background: #b91c1c !important;
+  color: #fff !important;
+  padding: 10px 14px !important;
+  border-radius: 10px !important;
+  font-weight: 900 !important;
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+.admin-danger-btn:hover {
+  background: #7f1010 !important;
+}
+
+.admin-success {
+  background: #e8ffe8;
+  color: #167316;
+  border: 1px solid #b4e7b4;
+  padding: 14px 16px;
+  border-radius: 12px;
+  margin: 16px 0;
+  font-weight: 900;
+}
+
+@media (max-width: 900px) {
+  .adminCouponGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .adminCouponWide {
+    grid-column: 1 !important;
+  }
+
+  .adminCouponActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

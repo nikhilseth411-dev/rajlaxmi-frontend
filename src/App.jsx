@@ -1,6 +1,31 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import { shopImages, collections, featuredJewellery } from "./data/productImages";
+import { Routes, Route, Link, useLocation, useNavigate } from "react-router-dom";
+import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminGoldRates from "./pages/AdminGoldRates";
+import AdminAddProduct from "./pages/AdminAddProduct";
+import AdminProductImages from "./pages/AdminProductImages";
+import AdminManageProducts from "./pages/AdminManageProducts";
+import AdminEditProduct from "./pages/AdminEditProduct";
+import AdminOrders from "./pages/AdminOrders";
+import AdminPayments from "./pages/AdminPayments";
+import Products from "./pages/Products";
+import ProductDetail from "./pages/ProductDetail";
+import CustomerLogin from "./pages/CustomerLogin";
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import OrderSuccess from "./pages/OrderSuccess";
+import PaymentSubmit from "./pages/PaymentSubmit";
+import MyOrders from "./pages/MyOrders";
+import CustomerRegister from "./pages/CustomerRegister";
+import ForgotPassword from "./pages/ForgotPassword";
+import VerifyOtp from "./pages/VerifyOtp";
+import AddressBook from "./pages/AddressBook";
+import Profile from "./pages/Profile";
+import AdminCustomers from "./pages/AdminCustomers";
+import AdminCoupons from "./pages/AdminCoupons";
 
 const API_BASE_URL = "http://localhost:8080/api/v1";
 
@@ -17,7 +42,7 @@ const CERTIFICATES = {
 
 const HERO_SLIDES = featuredJewellery.slice(0, 10).map((item) => item.image);
 
-function App() {
+function HomePage() {
   const [goldRates, setGoldRates] = useState(null);
   const [backendProduct, setBackendProduct] = useState(null);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -103,6 +128,14 @@ function TopTicker({ goldRates }) {
 }
 
 function Header() {
+  const navigate = useNavigate();
+  const customerToken = localStorage.getItem("rajlaxmi_customer_token");
+
+  const handleLogout = () => {
+    localStorage.removeItem("rajlaxmi_customer_token");
+    navigate("/login");
+  };
+
   return (
     <header className="header">
       <a href="#home" className="brand">
@@ -115,8 +148,8 @@ function Header() {
 
       <nav className="nav">
         <a href="#story">Our Story</a>
+        <Link to="/products">Products</Link>
         <a href="#collections">Collections</a>
-        <a href="#featured">Featured</a>
         <a href="#credentials">Verified Business</a>
         <a href="#gold-rates">Gold Rates</a>
         <a href="#store">Visit Store</a>
@@ -124,11 +157,37 @@ function Header() {
 
       <div className="actions">
         <button aria-label="Search">🔍</button>
-        <button aria-label="Wishlist">🤍</button>
-        <button className="cartBtn" aria-label="Cart">
+
+        <button aria-label="Wishlist" disabled title="Wishlist coming soon">
+          🤍
+        </button>
+
+        <button
+          className="cartBtn"
+          aria-label="Cart"
+          onClick={() => navigate("/cart")}
+        >
           🛒 <span>0</span>
         </button>
-        <button className="loginBtn">Login</button>
+
+        {customerToken && (
+          <button
+            className="loginBtn"
+            onClick={() => navigate("/my-orders")}
+          >
+            My Orders
+          </button>
+        )}
+
+        {customerToken ? (
+          <button className="loginBtn" onClick={handleLogout}>
+            Logout
+          </button>
+        ) : (
+          <button className="loginBtn" onClick={() => navigate("/login")}>
+            Login
+          </button>
+        )}
       </div>
     </header>
   );
@@ -629,4 +688,90 @@ function SectionHeading({ eyebrow, title, dark }) {
   );
 }
 
+function CustomerNavbar() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const isAdminPage =
+    location.pathname.startsWith("/admin") ||
+    location.pathname === "/adminlogin";
+
+  const isFullPage =
+    location.pathname.startsWith("/order-success") ||
+    location.pathname.startsWith("/payment");
+
+  const isHomePage = location.pathname === "/";
+
+  if (isAdminPage || isFullPage || isHomePage) {
+    return null;
+  }
+  const customerToken = localStorage.getItem("rajlaxmi_customer_token");
+
+  const handleLogout = () => {
+    localStorage.removeItem("rajlaxmi_customer_token");
+    navigate("/login");
+  };
+
+  return (
+    <nav className="customerNavbar">
+      <Link to="/" className="customerBrand">
+        Raj Laxmi Jewellers
+      </Link>
+
+      <div className="customerNavLinks">
+        <Link to="/">Home</Link>
+        <Link to="/products">Products</Link>
+        <Link to="/cart">Cart</Link>
+
+        {customerToken && <Link to="/my-orders">My Orders</Link>}
+        {customerToken && <Link to="/addresses">Addresses</Link>}
+        {customerToken && <Link to="/profile">Profile</Link>}
+
+        {customerToken ? (
+          <button type="button" onClick={handleLogout}>
+            Logout
+          </button>
+        ) : (
+          <Link to="/login">Login</Link>
+        )}
+      </div>
+    </nav>
+  );
+}
+
+function App() {
+  return (
+    <>
+      <CustomerNavbar />
+
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/adminlogin" element={<AdminLogin />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/gold-rates" element={<AdminGoldRates />} />
+        <Route path="/admin/products/new" element={<AdminAddProduct />} />
+        <Route path="/admin/products/:productId/images" element={<AdminProductImages />} />
+        <Route path="/admin/products" element={<AdminManageProducts />} />
+        <Route path="/admin/products/:productId/edit" element={<AdminEditProduct />} />
+        <Route path="/admin/orders" element={<AdminOrders />} />
+        <Route path="/admin/payments" element={<AdminPayments />} />
+        <Route path="/products" element={<Products />} />
+        <Route path="/products/:productId" element={<ProductDetail />} />
+        <Route path="/login" element={<CustomerLogin />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/order-success/:orderId" element={<OrderSuccess />} />
+        <Route path="/payment/:orderId" element={<PaymentSubmit />} />
+        <Route path="/my-orders" element={<MyOrders />} />
+        <Route path="/register" element={<CustomerRegister />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/verify-otp" element={<VerifyOtp />} />
+        <Route path="/addresses" element={<AddressBook />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/admin/customers" element={<AdminCustomers />} />
+        <Route path="/admin/coupons" element={<AdminCoupons />} />
+      </Routes>
+    </>
+  );
+}
 export default App;
