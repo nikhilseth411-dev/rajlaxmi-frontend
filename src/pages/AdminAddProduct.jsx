@@ -85,14 +85,24 @@ function AdminAddProduct() {
   }
 
   function generateSku() {
-    const randomNumber = Math.floor(100000 + Math.random() * 900000);
-    const cleanName = form.name
-      .trim()
-      .toUpperCase()
-      .replace(/[^A-Z0-9]+/g, "-")
-      .slice(0, 18);
+    const randomNumber = Math.floor(1000 + Math.random() * 9000);
 
-    const sku = `RLJ-${cleanName || "JEWEL"}-${randomNumber}`;
+    let categoryCode = "GOLD";
+
+    if (form.metalType === "SILVER" || form.productCategory === "SILVER_JEWELLERY") {
+      categoryCode = "SILVER";
+    } else if (
+      form.metalType === "DIAMOND" ||
+      form.productCategory === "DIAMOND_JEWELLERY"
+    ) {
+      categoryCode = "DIAMOND";
+    } else if (form.metalType === "PLATINUM") {
+      categoryCode = "PLATINUM";
+    } else {
+      categoryCode = "GOLD";
+    }
+
+    const sku = `RLJ-${categoryCode}-${randomNumber}`;
 
     setForm((previous) => ({
       ...previous,
@@ -107,45 +117,97 @@ function AdminAddProduct() {
     setError("");
 
     try {
-      if (!form.name.trim()) {
-        throw new Error("Product name is required");
+      const missing = [];
+
+      if (!form.name.trim()) missing.push("Product Name");
+      if (!form.sku.trim()) missing.push("SKU");
+      if (!form.description.trim()) missing.push("Description");
+      if (!form.categoryId) missing.push("Category");
+
+      if (!form.weightGrams || Number(form.weightGrams) <= 0) {
+        missing.push("Weight in Grams");
       }
 
-      if (!form.sku.trim()) {
-        throw new Error("SKU is required. Click Generate SKU.");
+      if (!form.makingCharges || Number(form.makingCharges) < 0) {
+        missing.push("Making Charges");
       }
 
-      if (!form.categoryId) {
-        throw new Error("Please select category");
+      if (form.stoneCharges === "" || Number(form.stoneCharges) < 0) {
+        missing.push("Stone Charges");
       }
+
+      if (!form.gstPercentage || Number(form.gstPercentage) < 0) {
+        missing.push("GST Percentage");
+      }
+
+      if (form.stockQuantity === "" || Number(form.stockQuantity) < 0) {
+        missing.push("Stock Quantity");
+      }
+
+      if (form.lowStockThreshold === "" || Number(form.lowStockThreshold) < 0) {
+        missing.push("Low Stock Threshold");
+      }
+
+      if (missing.length > 0) {
+        throw new Error("Please fill/correct these fields: " + missing.join(", "));
+      }
+
+      const weightValue = Number(form.weightGrams);
+      const makingValue = Number(form.makingCharges);
+      const stoneValue = Number(form.stoneCharges || 0);
+      const gstValue = Number(form.gstPercentage || 3);
+      const stockValue = Number(form.stockQuantity);
+      const lowStockValue = Number(form.lowStockThreshold || 1);
 
       const requestBody = {
         name: form.name.trim(),
-        sku: form.sku.trim(),
+        sku: form.sku.trim().toUpperCase(),
         description: form.description.trim(),
         categoryId: Number(form.categoryId),
+
         productCategory: form.productCategory,
         metalType: form.metalType,
         goldPurity: form.goldPurity,
-        weightGrams: Number(form.weightGrams),
-        makingCharges: Number(form.makingCharges),
+
+        weightGrams: weightValue,
+        weightInGrams: weightValue,
+
+        makingCharges: makingValue,
+        makingChargeType: form.makingChargesType,
         makingChargesType: form.makingChargesType,
-        stoneCharges: Number(form.stoneCharges),
-        gstPercentage: Number(form.gstPercentage),
-        bisHallmarkNumber: form.bisHallmarkNumber.trim(),
-        occasion: form.occasion.trim(),
+
+        stoneCharges: stoneValue,
+        gstPercentage: gstValue,
+
+        bisHallmarkNumber: form.bisHallmarkNumber.trim() || null,
+        occasion: form.occasion.trim() || "Daily Wear",
         gender: form.gender,
-        dimensions: form.dimensions.trim(),
-        finish: form.finish.trim(),
+        dimensions: form.dimensions.trim() || null,
+        finish: form.finish.trim() || null,
+
         metaTitle: form.metaTitle.trim() || form.name.trim(),
         metaDescription: form.metaDescription.trim() || form.description.trim(),
-        stockQuantity: Number(form.stockQuantity),
-        lowStockThreshold: Number(form.lowStockThreshold),
+
+        stockQuantity: stockValue,
+        lowStockThreshold: lowStockValue,
+
         bisHallmarked: form.bisHallmarked,
+        isBisHallmarked: form.bisHallmarked,
+
         newArrival: form.newArrival,
+        isNewArrival: form.newArrival,
+
         bestSeller: form.bestSeller,
+        isBestSeller: form.bestSeller,
+
         featured: form.featured,
+        isFeatured: form.featured,
+
+        active: true,
+        isActive: true,
       };
+
+      console.log("Create product payload:", requestBody);
 
       const response = await fetch(`${API_BASE_URL}/admin/products`, {
         method: "POST",
@@ -157,20 +219,33 @@ function AdminAddProduct() {
       });
 
       const text = await response.text();
-      const data = text ? JSON.parse(text) : null;
+      console.log("Create product status:", response.status);
+      console.log("Create product response:", text);
+
+      let data = null;
+
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch {
+        data = null;
+      }
 
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
           localStorage.removeItem("rajlaxmi_admin_token");
           navigate("/adminlogin");
-          throw new Error("Session expired. Please login again.");
+          throw new Error("Admin session expired. Please login again.");
         }
 
-        throw new Error(
+        const backendError =
           data?.message ||
+          data?.error ||
+          data?.details ||
+          (data?.errors ? JSON.stringify(data.errors) : "") ||
           text ||
-          `Unable to create product. Status: ${response.status}`
-        );
+          `Unable to create product. Status: ${response.status}`;
+
+        throw new Error(backendError);
       }
 
       const product = data?.data || data;
@@ -184,6 +259,7 @@ function AdminAddProduct() {
 
       setForm(initialForm);
     } catch (err) {
+      console.error("Create product error:", err);
       setError(err.message || "Unable to create product");
     } finally {
       setLoading(false);
@@ -220,7 +296,7 @@ function AdminAddProduct() {
           </Link>
         </div>
 
-        <form className="productAdminForm" onSubmit={createProduct}>
+        <form className="productAdminForm" onSubmit={createProduct} noValidate>
           <section className="adminFormSection">
             <h2>Basic Product Details</h2>
 
