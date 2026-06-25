@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/admin.css";
 
-const API_BASE_URL = "http://localhost:8080/api/v1";
+import { API_BASE_URL } from "../config/api";
 
 function AdminGoldRates() {
   const navigate = useNavigate();

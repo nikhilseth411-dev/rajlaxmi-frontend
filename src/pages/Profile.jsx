@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE = "http://localhost:8080/api/v1";
+import { API_BASE_URL as API_BASE } from "../config/api";
 
 function Profile() {
   const navigate = useNavigate();

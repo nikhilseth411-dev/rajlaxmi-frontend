@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../styles/admin.css";
+import { API_BASE_URL as API_BASE } from "../config/api";
 
 function AdminProductImages() {
   const { productId } = useParams();
@@ -53,7 +54,7 @@ function AdminProductImages() {
       formData.append("file", file);
 
       const response = await fetch(
-        `http://localhost:8080/api/v1/admin/products/${productId}/images?isPrimary=${isPrimary}`,
+        `${API_BASE}/admin/products/${productId}/images?isPrimary=${isPrimary}`,
         {
           method: "POST",
           headers: {

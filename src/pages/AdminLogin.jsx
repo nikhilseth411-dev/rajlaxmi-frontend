@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/admin.css";
 
-const API_BASE_URL = "http://localhost:8080/api/v1";
+import { API_BASE_URL } from "../config/api";
 
 function AdminLogin() {
   const navigate = useNavigate();

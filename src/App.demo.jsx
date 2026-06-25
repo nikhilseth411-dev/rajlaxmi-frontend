@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 
-const API_BASE_URL = "http://localhost:8080/api/v1";
+import { API_BASE_URL } from "./config/api";
 
 function App() {
   const [goldRates, setGoldRates] = useState(null);

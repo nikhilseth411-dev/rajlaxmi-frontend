@@ -27,7 +27,7 @@ import Profile from "./pages/Profile";
 import AdminCustomers from "./pages/AdminCustomers";
 import AdminCoupons from "./pages/AdminCoupons";
 
-const API_BASE_URL = "http://localhost:8080/api/v1";
+import { API_BASE_URL } from "./config/api";
 
 const LOGOS = {
   bis: "/images/logos/bis-logo.jpeg",

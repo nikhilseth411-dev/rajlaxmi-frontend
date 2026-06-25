@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/customer.css";
 
-const API_BASE = "http://localhost:8080/api/v1";
+import { API_BASE_URL as API_BASE, BACKEND_BASE_URL as BACKEND_BASE } from "../config/api";
 
 function Products() {
   const navigate = useNavigate();
@@ -28,14 +28,14 @@ function Products() {
       : imageUrl;
 
     if (cleanPath.startsWith("api/v1/")) {
-      return encodeURI(`http://localhost:8080/${cleanPath}`);
+      return encodeURI(`${BACKEND_BASE}/${cleanPath}`);
     }
 
     if (cleanPath.startsWith("uploads/")) {
-      return encodeURI(`http://localhost:8080/api/v1/${cleanPath}`);
+      return encodeURI(`${API_BASE}/${cleanPath}`);
     }
 
-    return encodeURI(`http://localhost:8080/api/v1/${cleanPath}`);
+    return encodeURI(`${API_BASE}/${cleanPath}`);
   };
 
   const extractProducts = (data) => {
