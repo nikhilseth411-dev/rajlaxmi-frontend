@@ -1,16 +1,32 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import "../styles/customer.css";
 
 import { API_BASE_URL as API_BASE, BACKEND_BASE_URL as BACKEND_BASE } from "../config/api";
 
+const CATEGORY_QUERY_TO_FILTER = {
+  bangles: "BANGLES",
+  mangalsutra: "MANGALSUTRA",
+  earrings: "EARRINGS",
+  necklaces: "NECKLACES",
+  rings: "RINGS",
+  pendants: "PENDANTS",
+  chains: "CHAINS",
+};
+
 function Products() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requestedCategory = (searchParams.get("category") || "").trim();
+  const initialCategoryFilter =
+    CATEGORY_QUERY_TO_FILTER[requestedCategory.toLowerCase()] || "";
 
   const [products, setProducts] = useState([]);
-  const [keyword, setKeyword] = useState("");
+  const [keyword, setKeyword] = useState(
+    requestedCategory && !initialCategoryFilter ? requestedCategory : "",
+  );
   const [metalType, setMetalType] = useState("");
-  const [productCategory, setProductCategory] = useState("");
+  const [productCategory, setProductCategory] = useState(initialCategoryFilter);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -149,6 +165,9 @@ function Products() {
             <option value="PENDANTS">Pendants</option>
             <option value="EARRINGS">Earrings</option>
             <option value="MANGALSUTRA">Mangalsutra</option>
+            <option value="NECKLACES">Necklaces</option>
+            <option value="BANGLES">Bangles</option>
+            <option value="CHAINS">Chains</option>
           </select>
 
           <button type="submit" disabled={loading}>

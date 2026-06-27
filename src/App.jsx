@@ -27,7 +27,7 @@ import Profile from "./pages/Profile";
 import AdminCustomers from "./pages/AdminCustomers";
 import AdminCoupons from "./pages/AdminCoupons";
 
-import { API_BASE_URL } from "./config/api";
+import { API_BASE_URL, BACKEND_BASE_URL } from "./config/api";
 
 const LOGOS = {
   bis: "/images/logos/bis-logo.jpeg",
@@ -42,14 +42,63 @@ const CERTIFICATES = {
 
 const HERO_SLIDES = featuredJewellery.slice(0, 10).map((item) => item.image);
 
+const SHOP_CATEGORIES = [
+  { name: "Bangles", image: "/images/products/rajkot-bali/RAJKOT-BALI10.jpeg" },
+  { name: "Mangalsutra", image: "/images/products/mangalsutra/Mangalsutra-1.png" },
+  { name: "Earrings", image: "/images/products/earrings/EARINGS4.jpeg" },
+  { name: "Necklaces", image: "/images/products/choker/CHOKER1_35.893gm.png" },
+  { name: "Rings", image: "/images/products/ladies-rings/LADIES-RINGS1.jpeg" },
+  { name: "Pendants", image: "/images/products/mangalsutra/Mangalsutra-2.png" },
+  { name: "Chains", image: "/images/products/choker/CHOKER2.png" },
+  { name: "Bracelets", image: "/images/products/rajkot-bali/RAJKOT-BALI12.jpeg" },
+];
+
+const CATEGORY_QUERY_ALIASES = {
+  Chokers: "Necklaces",
+  "Rajkot Bali": "Earrings",
+  "Ladies Rings": "Rings",
+  "Gents Rings": "Rings",
+};
+
+const getCategoryPath = (categoryName) => {
+  const queryCategory = CATEGORY_QUERY_ALIASES[categoryName] || categoryName;
+  return `/products?category=${encodeURIComponent(queryCategory)}`;
+};
+
+const extractProducts = (data) => {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.data)) return data.data;
+  if (Array.isArray(data?.data?.content)) return data.data.content;
+  if (Array.isArray(data?.content)) return data.content;
+  return [];
+};
+
+const getProductImageUrl = (imageUrl) => {
+  if (!imageUrl) return "/images/logo/shop-logo.jpeg";
+  if (imageUrl.startsWith("http")) return encodeURI(imageUrl);
+
+  const cleanPath = imageUrl.startsWith("/") ? imageUrl.slice(1) : imageUrl;
+  if (cleanPath.startsWith("api/v1/")) {
+    return encodeURI(`${BACKEND_BASE_URL}/${cleanPath}`);
+  }
+  return encodeURI(`${API_BASE_URL}/${cleanPath}`);
+};
+
+const formatCategoryName = (value) =>
+  String(value || "Jewellery")
+    .toLowerCase()
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
 function HomePage() {
   const [goldRates, setGoldRates] = useState(null);
-  const [backendProduct, setBackendProduct] = useState(null);
+  const [homepageProducts, setHomepageProducts] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
     fetchGoldRates();
-    fetchBackendProduct();
+    fetchHomepageProducts();
   }, []);
 
   useEffect(() => {
@@ -70,13 +119,17 @@ function HomePage() {
     }
   }
 
-  async function fetchBackendProduct() {
+  async function fetchHomepageProducts() {
     try {
-      const response = await fetch(`${API_BASE_URL}/products/1`);
-      const result = await response.json();
-      setBackendProduct(result.data);
+      const response = await fetch(
+        `${API_BASE_URL}/products?page=0&size=12&sortBy=createdAt&sortDir=desc`,
+      );
+      if (!response.ok) return;
+
+      const products = extractProducts(await response.json());
+      if (products.length > 0) setHomepageProducts(products);
     } catch (error) {
-      console.error("Product error:", error);
+      console.error("Featured products error:", error);
     }
   }
 
@@ -87,11 +140,11 @@ function HomePage() {
 
       <main>
         <Hero currentSlide={currentSlide} setCurrentSlide={setCurrentSlide} />
+        <ShopByCategory />
         <TrustStrip />
         <Heritage />
         <Collections />
-        <FeaturedJewellery />
-        <LivePriceDemo product={backendProduct} />
+        <FeaturedJewellery products={homepageProducts} />
         <Credentials />
         <GoldRates goldRates={goldRates} />
         <VisitStore />
@@ -280,6 +333,34 @@ function Hero({ currentSlide, setCurrentSlide }) {
   );
 }
 
+function ShopByCategory() {
+  return (
+    <section className="shopCategorySection" id="shop-by-category">
+      <div className="shopCategoryHeading">
+        <p>Find Your Signature Piece</p>
+        <h2>Shop By Category</h2>
+        <span aria-hidden="true" />
+      </div>
+
+      <div className="categoryScroller">
+        {SHOP_CATEGORIES.map((category) => (
+          <Link
+            className="categoryCard"
+            key={category.name}
+            to={getCategoryPath(category.name)}
+            aria-label={`Shop ${category.name}`}
+          >
+            <span className="categoryIcon">
+              <img src={category.image} alt={`${category.name} jewellery`} />
+            </span>
+            <span className="categoryName">{category.name}</span>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function TrustStrip() {
   const items = [
     {
@@ -395,71 +476,75 @@ function Collections() {
 
       <div className="collectionGrid">
         {collections.map((item) => (
-          <div className="collectionCard" key={item.folder}>
+          <Link
+            className="collectionCard"
+            key={item.folder}
+            to={getCategoryPath(item.name)}
+            aria-label={`Browse ${item.name}`}
+          >
             <div className="collectionImage">
               <img src={item.image} alt={item.name} />
             </div>
             <h3>{item.name}</h3>
             <p>{item.subtitle}</p>
             <span>{item.count} designs</span>
-          </div>
+          </Link>
         ))}
       </div>
     </section>
   );
 }
 
-function FeaturedJewellery() {
+function FeaturedJewellery({ products }) {
+  const hasLiveProducts = products.length > 0;
+  const displayItems = hasLiveProducts
+    ? products.slice(0, 12)
+    : featuredJewellery.slice(0, 12);
+
   return (
     <section className="section" id="featured">
       <SectionHeading eyebrow="Handpicked Designs" title="Featured Jewellery" />
 
       <div className="jewelleryGrid">
-        {featuredJewellery.slice(0, 12).map((item) => (
-          <div className="jewelleryCard" key={item.id}>
+        {displayItems.map((item) => {
+          const categoryName = hasLiveProducts
+            ? item.categoryName || formatCategoryName(item.productCategory)
+            : item.category;
+          const imageUrl = hasLiveProducts
+            ? getProductImageUrl(item.primaryImageUrl)
+            : item.image;
+          const productPath = hasLiveProducts
+            ? `/products/${item.id}`
+            : getCategoryPath(item.category);
+          const purity = hasLiveProducts
+            ? [item.metalType, item.goldPurity].filter(Boolean).join(" · ") ||
+              "Fine Jewellery"
+            : item.purity;
+          const priceText = hasLiveProducts && item.finalPrice
+            ? `₹${Number(item.finalPrice).toLocaleString("en-IN")}`
+            : item.priceText || "Price on Enquiry";
+
+          return (
+          <Link
+            className="jewelleryCard"
+            key={item.id}
+            to={productPath}
+            aria-label={`View ${item.name}`}
+          >
             <div className="jewelleryImage">
-              <img src={item.image} alt={item.name} />
+              <img src={imageUrl} alt={item.name} />
             </div>
 
             <div className="jewelleryInfo">
-              <p>{item.category}</p>
+              <p>{categoryName}</p>
               <h3>{item.name}</h3>
-              <span>{item.purity}</span>
-              <strong>{item.priceText}</strong>
+              <span>{purity}</span>
+              <strong>{priceText}</strong>
             </div>
-          </div>
-        ))}
+          </Link>
+          );
+        })}
       </div>
-    </section>
-  );
-}
-
-function LivePriceDemo({ product }) {
-  return (
-    <section className="section priceDemo">
-      <SectionHeading eyebrow="Backend Connected" title="Live Price Calculation Demo" />
-
-      {product ? (
-        <div className="featuredCard">
-          <div className="featuredImage">
-            <img src={featuredJewellery[0]?.image} alt={product.name} />
-          </div>
-
-          <div className="featuredInfo">
-            <span className="tag">Spring Boot API Connected</span>
-            <h3>{product.name}</h3>
-            <p>{product.goldPurityDisplay}</p>
-            <p>Weight: {product.weightGrams} gm</p>
-            <p>Gold Rate Used: ₹{product.currentGoldRatePerGram}/gm</p>
-            <p>Making Charges: ₹{product.makingCharges}</p>
-            <p>GST: ₹{product.gstAmount}</p>
-            <h4>₹{product.finalPrice}</h4>
-            <button className="enquireBtn">Enquire Now</button>
-          </div>
-        </div>
-      ) : (
-        <p className="loadingText">Loading product from backend...</p>
-      )}
     </section>
   );
 }
