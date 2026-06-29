@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../styles/admin.css";
 import { API_BASE_URL as API_BASE } from "../config/api";
@@ -13,6 +13,14 @@ function AdminProductImages() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+  const fileInputRef = useRef(null);
+
+  const clearSelectedImage = () => {
+    if (preview) URL.revokeObjectURL(preview);
+    setFile(null);
+    setPreview("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -22,6 +30,7 @@ function AdminProductImages() {
     setError("");
 
     if (selectedFile) {
+      if (preview) URL.revokeObjectURL(preview);
       setPreview(URL.createObjectURL(selectedFile));
     } else {
       setPreview("");
@@ -84,8 +93,7 @@ function AdminProductImages() {
       }
 
       setSuccess("Product image uploaded successfully!");
-      setFile(null);
-      setPreview("");
+      clearSelectedImage();
     } catch (err) {
       console.error("Image upload error:", err);
       setError(err.message || "Something went wrong while uploading image.");
@@ -105,7 +113,12 @@ function AdminProductImages() {
 
         <form className="admin-form" onSubmit={handleUpload}>
           <label>Choose Product Image</label>
-          <input type="file" accept="image/*" onChange={handleFileChange} />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handleFileChange}
+          />
 
           {preview && (
             <div className="admin-image-preview-box">
@@ -115,6 +128,13 @@ function AdminProductImages() {
                 alt="Product preview"
                 className="admin-image-preview"
               />
+              <button
+                type="button"
+                className="admin-secondary-btn"
+                onClick={clearSelectedImage}
+              >
+                Remove selected image
+              </button>
             </div>
           )}
 

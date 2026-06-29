@@ -4,6 +4,24 @@ import "../styles/admin.css";
 
 import { API_BASE_URL as API_BASE, BACKEND_BASE_URL as BACKEND_BASE } from "../config/api";
 
+const formatPrice = (value) => {
+  const price = Number(value);
+  if (!Number.isFinite(price) || price <= 0) return "Unavailable";
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(price);
+};
+
+const formatWeight = (product) => {
+  const weight = Number(
+    product?.weightGrams ?? product?.weightInGrams ?? product?.weight,
+  );
+  return Number.isFinite(weight) ? `${weight.toFixed(2)} gm` : "Unavailable";
+};
+
 function AdminManageProducts() {
   const navigate = useNavigate();
 
@@ -180,7 +198,7 @@ function AdminManageProducts() {
                   </p>
 
                   <p>
-                    <strong>Weight:</strong> {product.weightGrams || 0} g
+                    <strong>Weight:</strong> {formatWeight(product)}
                   </p>
 
                   <p>
@@ -188,8 +206,7 @@ function AdminManageProducts() {
                   </p>
 
                   <p>
-                    <strong>Price:</strong>{" "}
-                    ₹{Number(product.finalPrice || 0).toLocaleString("en-IN")}
+                    <strong>Price:</strong> {formatPrice(product.finalPrice)}
                   </p>
 
                   <div className="admin-product-badges">

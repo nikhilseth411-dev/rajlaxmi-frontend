@@ -303,10 +303,20 @@ function AdminEditProduct() {
               onChange={(e) => updateField("productCategory", e.target.value)}
             >
               <option value="GOLD_JEWELLERY">GOLD_JEWELLERY</option>
+              <option value="DIAMOND_JEWELLERY">DIAMOND_JEWELLERY</option>
+              <option value="SILVER_COLLECTION">SILVER_COLLECTION</option>
+              <option value="BRIDAL_COLLECTION">BRIDAL_COLLECTION</option>
+              <option value="TEMPLE_JEWELLERY">TEMPLE_JEWELLERY</option>
+              <option value="ANTIQUE_JEWELLERY">ANTIQUE_JEWELLERY</option>
               <option value="PENDANTS">PENDANTS</option>
               <option value="RINGS">RINGS</option>
               <option value="EARRINGS">EARRINGS</option>
               <option value="MANGALSUTRA">MANGALSUTRA</option>
+              <option value="NECKLACES">NECKLACES</option>
+              <option value="BANGLES">BANGLES</option>
+              <option value="CHAINS">CHAINS</option>
+              <option value="BRACELETS">BRACELETS</option>
+              <option value="ANKLETS">ANKLETS</option>
             </select>
           </div>
 

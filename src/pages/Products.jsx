@@ -4,53 +4,111 @@ import "../styles/customer.css";
 
 import { API_BASE_URL as API_BASE, BACKEND_BASE_URL as BACKEND_BASE } from "../config/api";
 
-const CATEGORY_QUERY_TO_FILTER = {
-  bangles: "BANGLES",
-  mangalsutra: "MANGALSUTRA",
-  earrings: "EARRINGS",
-  necklaces: "NECKLACES",
-  rings: "RINGS",
-  pendants: "PENDANTS",
-  chains: "CHAINS",
+const FALLBACK_CATEGORIES = [
+  ["Bangles", "BANGLES"],
+  ["Mangalsutra", "MANGALSUTRA"],
+  ["Earrings", "EARRINGS"],
+  ["Necklaces", "NECKLACES"],
+  ["Rings", "RINGS"],
+  ["Pendants", "PENDANTS"],
+  ["Chains", "CHAINS"],
+  ["Bracelets", "BRACELETS"],
+  ["Gold Jewellery", "GOLD_JEWELLERY"],
+  ["Diamond Jewellery", "DIAMOND_JEWELLERY"],
+  ["Silver Collection", "SILVER_COLLECTION"],
+  ["Bridal Collection", "BRIDAL_COLLECTION"],
+  ["Temple Jewellery", "TEMPLE_JEWELLERY"],
+].map(([name, productCategory]) => ({ name, productCategory }));
+
+const normalizeCategory = (value) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[_\s]+/g, "-")
+    .replace(/-+/g, "-");
+
+const categoryMatchesQuery = (category, query) => {
+  const normalizedQuery = normalizeCategory(query);
+  const normalizedName = normalizeCategory(category.name);
+  const normalizedSlug = normalizeCategory(category.slug);
+  return [normalizedName, normalizedSlug, normalizedSlug.replace(/^gold-/, "")]
+    .filter(Boolean)
+    .includes(normalizedQuery);
+};
+
+const buildCategoryOptions = (categories) => {
+  const apiOptions = categories.map((category) => ({
+    ...category,
+    value: `id:${category.id}`,
+  }));
+  const existingNames = new Set(apiOptions.map((option) => normalizeCategory(option.name)));
+  const fallbacks = FALLBACK_CATEGORIES
+    .filter((option) => !existingNames.has(normalizeCategory(option.name)))
+    .map((option) => ({ ...option, value: `enum:${option.productCategory}` }));
+  return [...apiOptions, ...fallbacks];
+};
+
+const resolveCategoryFilter = (requestedCategory, options) => {
+  if (!requestedCategory) return "";
+  return options.find((option) => categoryMatchesQuery(option, requestedCategory))?.value || "";
+};
+
+const formatCategoryName = (value) =>
+  String(value || "Jewellery")
+    .toLowerCase()
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+const formatPurity = (value) => String(value || "Pure").replace("GOLD_", "");
+
+const getWeight = (product) =>
+  product?.weightGrams ?? product?.weightInGrams ?? product?.weight ?? null;
+
+const formatWeight = (product) => {
+  const weight = Number(getWeight(product));
+  return Number.isFinite(weight) ? `${weight.toFixed(2)} gm` : "Not available";
+};
+
+const formatPrice = (value) => {
+  const price = Number(value);
+  if (!Number.isFinite(price) || price <= 0) return "Price unavailable";
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(price);
 };
 
 function Products() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const requestedCategory = (searchParams.get("category") || "").trim();
-  const initialCategoryFilter =
-    CATEGORY_QUERY_TO_FILTER[requestedCategory.toLowerCase()] || "";
+  const fallbackOptions = buildCategoryOptions([]);
+  const initialCategoryFilter = resolveCategoryFilter(requestedCategory, fallbackOptions);
 
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [keyword, setKeyword] = useState(
     requestedCategory && !initialCategoryFilter ? requestedCategory : "",
   );
   const [metalType, setMetalType] = useState("");
-  const [productCategory, setProductCategory] = useState(initialCategoryFilter);
+  const [categoryFilter, setCategoryFilter] = useState(initialCategoryFilter);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const categoryOptions = buildCategoryOptions(categories);
+  const selectedCategoryName =
+    categoryOptions.find((option) => option.value === categoryFilter)?.name ||
+    requestedCategory;
+
   const getImageUrl = (imageUrl) => {
-    if (!imageUrl) {
-      return "/images/logo/shop-logo.jpeg";
-    }
+    if (!imageUrl) return "/images/logo/shop-logo.jpeg";
+    if (imageUrl.startsWith("http")) return encodeURI(imageUrl);
 
-    if (imageUrl.startsWith("http")) {
-      return encodeURI(imageUrl);
-    }
-
-    const cleanPath = imageUrl.startsWith("/")
-      ? imageUrl.substring(1)
-      : imageUrl;
-
-    if (cleanPath.startsWith("api/v1/")) {
-      return encodeURI(`${BACKEND_BASE}/${cleanPath}`);
-    }
-
-    if (cleanPath.startsWith("uploads/")) {
-      return encodeURI(`${API_BASE}/${cleanPath}`);
-    }
-
+    const cleanPath = imageUrl.startsWith("/") ? imageUrl.substring(1) : imageUrl;
+    if (cleanPath.startsWith("api/v1/")) return encodeURI(`${BACKEND_BASE}/${cleanPath}`);
     return encodeURI(`${API_BASE}/${cleanPath}`);
   };
 
@@ -62,23 +120,27 @@ function Products() {
     return [];
   };
 
-  const fetchProducts = async () => {
+  const extractCategories = (data) => {
+    const list = data?.data?.content || data?.data || data?.content || data || [];
+    return Array.isArray(list) ? list : [];
+  };
+
+  const fetchProducts = async (overrides = {}) => {
+    const activeKeyword = overrides.keyword ?? keyword;
+    const activeMetalType = overrides.metalType ?? metalType;
+    const activeCategoryFilter = overrides.categoryFilter ?? categoryFilter;
+
     try {
       setLoading(true);
       setError("");
 
       const params = new URLSearchParams();
-
-      if (keyword.trim()) {
-        params.append("keyword", keyword.trim());
-      }
-
-      if (metalType) {
-        params.append("metalType", metalType);
-      }
-
-      if (productCategory) {
-        params.append("productCategory", productCategory);
+      if (activeKeyword.trim()) params.append("keyword", activeKeyword.trim());
+      if (activeMetalType) params.append("metalType", activeMetalType);
+      if (activeCategoryFilter.startsWith("id:")) {
+        params.append("categoryId", activeCategoryFilter.slice(3));
+      } else if (activeCategoryFilter.startsWith("enum:")) {
+        params.append("productCategory", activeCategoryFilter.slice(5));
       }
 
       params.append("page", "0");
@@ -87,54 +149,74 @@ function Products() {
       params.append("sortDir", "desc");
 
       const response = await fetch(`${API_BASE}/products?${params.toString()}`);
-
       const text = await response.text();
-
-      console.log("Customer products status:", response.status);
-      console.log("Customer products response:", text);
-
       const data = text ? JSON.parse(text) : null;
-
       if (!response.ok) {
-        throw new Error(data?.message || text || "Unable to load products.");
+        throw new Error(data?.message || "Unable to load products right now.");
       }
-
       setProducts(extractProducts(data));
     } catch (err) {
       console.error("Customer products error:", err);
-      setError(err.message || "Something went wrong while loading products.");
+      setError("Unable to connect. Please refresh and try again.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    let active = true;
 
-  const handleSearch = (e) => {
-    e.preventDefault();
+    async function initializeProducts() {
+      let categoryList = [];
+      try {
+        const response = await fetch(`${API_BASE}/categories`);
+        if (response.ok) categoryList = extractCategories(await response.json());
+      } catch (err) {
+        console.error("Category fetch error:", err);
+      }
+
+      const options = buildCategoryOptions(categoryList);
+      const resolvedFilter = resolveCategoryFilter(requestedCategory, options);
+      const resolvedKeyword = requestedCategory && !resolvedFilter ? requestedCategory : "";
+
+      if (!active) return;
+      setCategories(categoryList);
+      setCategoryFilter(resolvedFilter);
+      setKeyword(resolvedKeyword);
+      await fetchProducts({
+        keyword: resolvedKeyword,
+        metalType: "",
+        categoryFilter: resolvedFilter,
+      });
+    }
+
+    initializeProducts();
+    return () => {
+      active = false;
+    };
+    // Initial filters are passed explicitly; state-based fetches happen from form actions.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [requestedCategory]);
+
+  const handleSearch = (event) => {
+    event.preventDefault();
     fetchProducts();
   };
 
   const resetFilters = () => {
     setKeyword("");
     setMetalType("");
-    setProductCategory("");
-
-    setTimeout(() => {
-      fetchProducts();
-    }, 100);
+    setCategoryFilter("");
+    setSearchParams({});
+    fetchProducts({ keyword: "", metalType: "", categoryFilter: "" });
   };
 
   return (
     <main className="productsPage">
       <section className="productsHero">
         <p>Raj Laxmi Jewellers</p>
-        <h1>Our Jewellery Collection</h1>
-        <span>
-          Explore gold rings, pendants, jewellery pieces and handpicked designs.
-        </span>
+        <h1>{selectedCategoryName || "Our Jewellery Collection"}</h1>
+        <span>Explore BIS hallmarked designs with transparent weight and live pricing.</span>
       </section>
 
       <section className="productsContainer">
@@ -142,50 +224,50 @@ function Products() {
           <input
             type="text"
             value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
+            onChange={(event) => setKeyword(event.target.value)}
             placeholder="Search jewellery by name or SKU"
           />
 
-          <select
-            value={metalType}
-            onChange={(e) => setMetalType(e.target.value)}
-          >
+          <select value={metalType} onChange={(event) => setMetalType(event.target.value)}>
             <option value="">All Metals</option>
             <option value="GOLD">Gold</option>
             <option value="SILVER">Silver</option>
+            <option value="DIAMOND">Diamond</option>
           </select>
 
           <select
-            value={productCategory}
-            onChange={(e) => setProductCategory(e.target.value)}
+            value={categoryFilter}
+            onChange={(event) => setCategoryFilter(event.target.value)}
           >
             <option value="">All Categories</option>
-            <option value="GOLD_JEWELLERY">Gold Jewellery</option>
-            <option value="RINGS">Rings</option>
-            <option value="PENDANTS">Pendants</option>
-            <option value="EARRINGS">Earrings</option>
-            <option value="MANGALSUTRA">Mangalsutra</option>
-            <option value="NECKLACES">Necklaces</option>
-            <option value="BANGLES">Bangles</option>
-            <option value="CHAINS">Chains</option>
+            {categoryOptions.map((option) => (
+              <option key={option.value} value={option.value}>{option.name}</option>
+            ))}
           </select>
 
           <button type="submit" disabled={loading}>
             {loading ? "Searching..." : "Search"}
           </button>
-
-          <button type="button" className="outlineBtn" onClick={resetFilters}>
-            Reset
-          </button>
+          <button type="button" className="outlineBtn" onClick={resetFilters}>Reset</button>
         </form>
 
         {error && <div className="customerError">{error}</div>}
+        {loading && <div className="customerLoading">Loading jewellery...</div>}
 
-        {loading && <div className="customerLoading">Loading products...</div>}
-
-        {!loading && products.length === 0 && (
+        {!loading && !error && products.length === 0 && (
           <div className="customerEmptyBox">
-            No products found. Please try another search.
+            <h2>No products found{selectedCategoryName ? ` in ${selectedCategoryName}` : ""}.</h2>
+            <p>Explore the full collection or ask the store about new arrivals.</p>
+            <div className="customerEmptyActions">
+              <button type="button" onClick={resetFilters}>Explore all products</button>
+              <a
+                href="https://wa.me/919102316789?text=Hello%20Raj%20Laxmi%20Jewellers%2C%20I%20want%20to%20ask%20about%20your%20jewellery%20collection."
+                target="_blank"
+                rel="noreferrer"
+              >
+                Contact on WhatsApp
+              </a>
+            </div>
           </div>
         )}
 
@@ -197,31 +279,23 @@ function Products() {
                   <img
                     src={getImageUrl(product.primaryImageUrl)}
                     alt={product.name}
-                    onError={(e) => {
-                      e.currentTarget.src = "/images/logo/shop-logo.jpeg";
+                    onError={(event) => {
+                      event.currentTarget.src = "/images/logo/shop-logo.jpeg";
                     }}
                   />
-
-                  {product.featured && (
-                    <span className="productBadge">Featured</span>
-                  )}
+                  {product.featured && <span className="productBadge">Featured</span>}
                 </div>
 
                 <div className="productInfo">
+                  <p className="productCategoryLabel">
+                    {product.categoryName || formatCategoryName(product.productCategory)}
+                  </p>
                   <h3>{product.name}</h3>
-
                   <p className="productMeta">
-                    {product.metalType || "Jewellery"} |{" "}
-                    {product.goldPurity || "Pure"}
+                    {formatCategoryName(product.metalType)} | {formatPurity(product.goldPurity)}
                   </p>
-
-                  <p className="productWeight">
-                    Weight: <strong>{product.weightGrams || 0} g</strong>
-                  </p>
-
-                  <p className="productPrice">
-                    ₹{Number(product.finalPrice || 0).toLocaleString("en-IN")}
-                  </p>
+                  <p className="productWeight">Weight: <strong>{formatWeight(product)}</strong></p>
+                  <p className="productPrice">{formatPrice(product.finalPrice)}</p>
 
                   <div className="productSmallBadges">
                     {product.bisHallmarked && <span>BIS Hallmarked</span>}
@@ -229,22 +303,10 @@ function Products() {
                     {product.bestSeller && <span>Best Seller</span>}
                   </div>
 
-                  <p
-                    className={
-                      product.inStock || product.stockQuantity > 0
-                        ? "stockText inStock"
-                        : "stockText outStock"
-                    }
-                  >
-                    {product.inStock || product.stockQuantity > 0
-                      ? "In Stock"
-                      : "Out of Stock"}
+                  <p className={product.inStock || product.stockQuantity > 0 ? "stockText inStock" : "stockText outStock"}>
+                    {product.inStock || product.stockQuantity > 0 ? "In Stock" : "Out of Stock"}
                   </p>
-
-                  <button
-                    type="button"
-                    onClick={() => navigate(`/products/${product.id}`)}
-                  >
+                  <button type="button" onClick={() => navigate(`/products/${product.id}`)}>
                     View Details
                   </button>
                 </div>

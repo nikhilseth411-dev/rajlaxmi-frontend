@@ -32,6 +32,27 @@ const initialForm = {
   featured: true,
 };
 
+function inferProductCategory(category, fallback = "GOLD_JEWELLERY") {
+  const source = `${category?.name || category?.categoryName || ""} ${category?.slug || ""}`
+    .toLowerCase();
+
+  if (source.includes("mangalsutra")) return "MANGALSUTRA";
+  if (source.includes("earring")) return "EARRINGS";
+  if (source.includes("necklace")) return "NECKLACES";
+  if (source.includes("bangle")) return "BANGLES";
+  if (source.includes("bracelet")) return "BRACELETS";
+  if (source.includes("ring")) return "RINGS";
+  if (source.includes("pendant")) return "PENDANTS";
+  if (source.includes("chain")) return "CHAINS";
+  if (source.includes("anklet")) return "ANKLETS";
+  if (source.includes("diamond")) return "DIAMOND_JEWELLERY";
+  if (source.includes("bridal")) return "BRIDAL_COLLECTION";
+  if (source.includes("temple")) return "TEMPLE_JEWELLERY";
+  if (source.includes("antique")) return "ANTIQUE_JEWELLERY";
+  if (source.includes("silver")) return "SILVER_COLLECTION";
+  return fallback;
+}
+
 function AdminAddProduct() {
   const navigate = useNavigate();
   const token = localStorage.getItem("rajlaxmi_admin_token");
@@ -78,6 +99,21 @@ function AdminAddProduct() {
   function handleChange(event) {
     const { name, value, type, checked } = event.target;
 
+    if (name === "categoryId") {
+      const selectedCategory = categories.find(
+        (category) => String(category.id) === value,
+      );
+      setForm((previous) => ({
+        ...previous,
+        categoryId: value,
+        productCategory: inferProductCategory(
+          selectedCategory,
+          previous.productCategory,
+        ),
+      }));
+      return;
+    }
+
     setForm((previous) => ({
       ...previous,
       [name]: type === "checkbox" ? checked : value,
@@ -89,7 +125,7 @@ function AdminAddProduct() {
 
     let categoryCode = "GOLD";
 
-    if (form.metalType === "SILVER" || form.productCategory === "SILVER_JEWELLERY") {
+    if (form.metalType === "SILVER" || form.productCategory === "SILVER_COLLECTION") {
       categoryCode = "SILVER";
     } else if (
       form.metalType === "DIAMOND" ||
@@ -366,15 +402,27 @@ function AdminAddProduct() {
               </label>
 
               <label>
-                Product Category
+                Product Category (matched automatically)
                 <select
                   name="productCategory"
                   value={form.productCategory}
                   onChange={handleChange}
                 >
                   <option value="GOLD_JEWELLERY">Gold Jewellery</option>
-                  <option value="SILVER_JEWELLERY">Silver Jewellery</option>
+                  <option value="SILVER_COLLECTION">Silver Collection</option>
                   <option value="DIAMOND_JEWELLERY">Diamond Jewellery</option>
+                  <option value="BRIDAL_COLLECTION">Bridal Collection</option>
+                  <option value="TEMPLE_JEWELLERY">Temple Jewellery</option>
+                  <option value="ANTIQUE_JEWELLERY">Antique Jewellery</option>
+                  <option value="MANGALSUTRA">Mangalsutra</option>
+                  <option value="EARRINGS">Earrings</option>
+                  <option value="NECKLACES">Necklaces</option>
+                  <option value="BANGLES">Bangles</option>
+                  <option value="RINGS">Rings</option>
+                  <option value="PENDANTS">Pendants</option>
+                  <option value="CHAINS">Chains</option>
+                  <option value="BRACELETS">Bracelets</option>
+                  <option value="ANKLETS">Anklets</option>
                 </select>
               </label>
 

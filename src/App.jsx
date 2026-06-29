@@ -92,6 +92,22 @@ const formatCategoryName = (value) =>
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 
+const formatProductPrice = (value) => {
+  const price = Number(value);
+  if (!Number.isFinite(price) || price <= 0) return "Price on Enquiry";
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(price);
+};
+
+const formatProductWeight = (item) => {
+  const weight = Number(item?.weightGrams ?? item?.weightInGrams ?? item?.weight);
+  return Number.isFinite(weight) ? `${weight.toFixed(2)} gm` : null;
+};
+
 function HomePage() {
   const [goldRates, setGoldRates] = useState(null);
   const [homepageProducts, setHomepageProducts] = useState([]);
@@ -607,8 +623,9 @@ function FeaturedJewellery({ products }) {
             ? [item.metalType, item.goldPurity].filter(Boolean).join(" · ") ||
               "Fine Jewellery"
             : item.purity;
-          const priceText = hasLiveProducts && item.finalPrice
-            ? `₹${Number(item.finalPrice).toLocaleString("en-IN")}`
+          const weightText = hasLiveProducts ? formatProductWeight(item) : null;
+          const priceText = hasLiveProducts
+            ? formatProductPrice(item.finalPrice)
             : item.priceText || "Price on Enquiry";
 
           return (
@@ -625,7 +642,8 @@ function FeaturedJewellery({ products }) {
             <div className="jewelleryInfo">
               <p>{categoryName}</p>
               <h3>{item.name}</h3>
-              <span>{purity}</span>
+              <span className="jewellerySpecs">{purity}</span>
+              {weightText && <span className="jewelleryWeight">Weight: {weightText}</span>}
               <strong>{priceText}</strong>
             </div>
           </Link>

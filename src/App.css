@@ -866,6 +866,16 @@ select {
   margin-bottom: 12px;
 }
 
+.jewelleryInfo .jewellerySpecs {
+  margin-bottom: 5px;
+}
+
+.jewelleryInfo .jewelleryWeight {
+  margin-bottom: 12px;
+  color: var(--gold-dark);
+  font-weight: 700;
+}
+
 .jewelleryInfo strong {
   color: var(--accent);
   font-size: 15px;

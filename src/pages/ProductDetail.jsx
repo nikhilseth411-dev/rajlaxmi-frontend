@@ -4,6 +4,26 @@ import "../styles/customer.css";
 
 import { API_BASE_URL as API_BASE, BACKEND_BASE_URL as BACKEND_BASE } from "../config/api";
 
+const formatPrice = (value) => {
+  if (value === null || value === undefined || value === "") return "Not available";
+  const price = Number(value);
+  if (!Number.isFinite(price) || price < 0) return "Not available";
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(price);
+};
+
+const getWeight = (product) =>
+  product?.weightGrams ?? product?.weightInGrams ?? product?.weight ?? null;
+
+const formatWeight = (product) => {
+  const weight = Number(getWeight(product));
+  return Number.isFinite(weight) ? `${weight.toFixed(2)} gm` : "Not available";
+};
+
 function ProductDetail() {
   const { productId } = useParams();
   const navigate = useNavigate();
@@ -163,6 +183,14 @@ function ProductDetail() {
     product.inventory?.quantity ??
     product.stockQuantity ??
     0;
+  const finalPriceText = formatPrice(product.finalPrice);
+  const goldRate = product.currentGoldRatePerGram ?? product.currentGoldRate;
+  const goldRateText = goldRate === null || goldRate === undefined
+    ? "Not available"
+    : `${formatPrice(goldRate)} / gm`;
+  const whatsappMessage = encodeURIComponent(
+    `Hello Raj Laxmi Jewellers, I am interested in this product: ${product.name}, SKU: ${product.sku || "N/A"}, Price: ${finalPriceText}`,
+  );
 
   return (
     <main className="productDetailPage">
@@ -224,7 +252,7 @@ function ProductDetail() {
             </div>
 
             <p className="productDetailPrice">
-              ₹{Number(product.finalPrice || 0).toLocaleString("en-IN")}
+              {finalPriceText}
             </p>
 
             <p className="productDetailStock">
@@ -235,6 +263,16 @@ function ProductDetail() {
 
             <div className="productSpecBox">
               <h3>Product Details</h3>
+
+              <div>
+                <span>Category</span>
+                <strong>{product.categoryName || product.productCategory || "N/A"}</strong>
+              </div>
+
+              <div>
+                <span>SKU</span>
+                <strong>{product.sku || "N/A"}</strong>
+              </div>
 
               <div>
                 <span>Metal</span>
@@ -250,26 +288,42 @@ function ProductDetail() {
 
               <div>
                 <span>Weight</span>
-                <strong>{product.weightGrams || 0} g</strong>
+                <strong>{formatWeight(product)}</strong>
+              </div>
+
+              <div>
+                <span>Gold Rate Used</span>
+                <strong>{goldRateText}</strong>
               </div>
 
               <div>
                 <span>Making Charges</span>
                 <strong>
-                  ₹{Number(product.makingCharges || 0).toLocaleString("en-IN")}
+                  {formatPrice(product.makingCharges)}
+                  {product.makingChargesType ? ` (${product.makingChargesType.replace("_", " ")})` : ""}
                 </strong>
               </div>
 
               <div>
                 <span>Stone Charges</span>
-                <strong>
-                  ₹{Number(product.stoneCharges || 0).toLocaleString("en-IN")}
-                </strong>
+                <strong>{formatPrice(product.stoneCharges)}</strong>
               </div>
 
               <div>
                 <span>GST</span>
-                <strong>{product.gstPercentage || 0}%</strong>
+                <strong>
+                  {product.gstPercentage || 0}% ({formatPrice(product.gstAmount)})
+                </strong>
+              </div>
+
+              <div>
+                <span>Final Calculated Price</span>
+                <strong>{finalPriceText}</strong>
+              </div>
+
+              <div>
+                <span>BIS Hallmark</span>
+                <strong>{product.bisHallmarked ? "Certified" : "Not specified"}</strong>
               </div>
 
               <div>
@@ -298,9 +352,7 @@ function ProductDetail() {
               </button>
 
               <a
-                href={`https://wa.me/919876543210?text=${encodeURIComponent(
-                  `Hello Raj Laxmi Jewellers, I am interested in ${product.name}. Product ID: ${product.id}`
-                )}`}
+                href={`https://wa.me/919102316789?text=${whatsappMessage}`}
                 target="_blank"
                 rel="noreferrer"
               >
