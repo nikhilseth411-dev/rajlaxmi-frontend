@@ -26,6 +26,7 @@ import AddressBook from "./pages/AddressBook";
 import Profile from "./pages/Profile";
 import AdminCustomers from "./pages/AdminCustomers";
 import AdminCoupons from "./pages/AdminCoupons";
+import AdminAccountSettings from "./pages/AdminAccountSettings";
 
 import { API_BASE_URL, BACKEND_BASE_URL } from "./config/api";
 
@@ -840,6 +841,7 @@ function App() {
         <Route path="/admin/products/:productId/edit" element={<AdminEditProduct />} />
         <Route path="/admin/orders" element={<AdminOrders />} />
         <Route path="/admin/payments" element={<AdminPayments />} />
+        <Route path="/admin/account" element={<AdminAccountSettings />} />
         <Route path="/products" element={<Products />} />
         <Route path="/products/:productId" element={<ProductDetail />} />
         <Route path="/login" element={<CustomerLogin />} />

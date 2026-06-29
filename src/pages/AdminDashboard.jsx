@@ -110,6 +110,10 @@ function AdminDashboard() {
           <button type="button" onClick={() => goTo("/admin/coupons")}>
             Coupons
           </button>
+
+          <button type="button" onClick={() => goTo("/admin/account")}>
+            Account Security
+          </button>
         </nav>
 
         <button type="button" className="adminLogoutBtn" onClick={handleLogout}>

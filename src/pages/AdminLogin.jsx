@@ -1,15 +1,16 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/admin.css";
 
 import { API_BASE_URL } from "../config/api";
 
 function AdminLogin() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [form, setForm] = useState({
-    email: "admin@rajlaxmi.local",
-    password: "Admin@12345",
+    email: "",
+    password: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -52,8 +53,12 @@ function AdminLogin() {
         data.data?.accessToken;
 
       if (!token) {
-        console.log("Login response:", data);
         throw new Error("Token not found in login response");
+      }
+
+      const role = data?.data?.user?.role || data?.user?.role;
+      if (role !== "ADMIN") {
+        throw new Error("Admin access is required");
       }
 
       localStorage.setItem("rajlaxmi_admin_token", token);
@@ -76,6 +81,10 @@ function AdminLogin() {
         </div>
 
         <form onSubmit={handleSubmit} className="adminLoginForm">
+          {location.state?.message && (
+            <p className="adminSuccess">{location.state.message}</p>
+          )}
+
           <label>
             Email
             <input
@@ -84,6 +93,7 @@ function AdminLogin() {
               value={form.email}
               onChange={handleChange}
               placeholder="Enter admin email"
+              autoComplete="username"
               required
             />
           </label>
@@ -96,6 +106,7 @@ function AdminLogin() {
               value={form.password}
               onChange={handleChange}
               placeholder="Enter password"
+              autoComplete="current-password"
               required
             />
           </label>
