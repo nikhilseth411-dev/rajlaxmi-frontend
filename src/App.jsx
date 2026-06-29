@@ -183,9 +183,39 @@ function TopTicker({ goldRates }) {
 
 function Header() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const customerToken = localStorage.getItem("rajlaxmi_customer_token");
 
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location.pathname, location.search]);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") setIsMenuOpen(false);
+    };
+    const handleResize = () => {
+      if (window.innerWidth > 1120) setIsMenuOpen(false);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  const closeMenu = () => setIsMenuOpen(false);
+
+  const navigateFromHeader = (path) => {
+    closeMenu();
+    navigate(path);
+  };
+
   const handleLogout = () => {
+    closeMenu();
     localStorage.removeItem("rajlaxmi_customer_token");
     navigate("/login");
   };
@@ -200,7 +230,7 @@ function Header() {
         </div>
       </a>
 
-      <nav className="nav">
+      <nav className="nav" aria-label="Primary navigation">
         <a href="#story">Our Story</a>
         <Link to="/products">Products</Link>
         <a href="#collections">Collections</a>
@@ -242,6 +272,62 @@ function Header() {
             Login
           </button>
         )}
+      </div>
+
+      <div className="mobileHeaderActions">
+        <button
+          className="mobileCartButton"
+          type="button"
+          aria-label="Open cart"
+          title="Cart"
+          onClick={() => navigateFromHeader("/cart")}
+        >
+          <span className="mobileCartIcon" aria-hidden="true">&#128722;</span>
+          <span className="mobileCartCount">0</span>
+        </button>
+
+        <button
+          className="mobileLoginButton"
+          type="button"
+          onClick={() => navigateFromHeader(customerToken ? "/my-orders" : "/login")}
+        >
+          {customerToken ? "Orders" : "Login"}
+        </button>
+
+        <button
+          className={`mobileMenuToggle ${isMenuOpen ? "isOpen" : ""}`}
+          type="button"
+          aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-expanded={isMenuOpen}
+          aria-controls="mobile-navigation"
+          onClick={() => setIsMenuOpen((open) => !open)}
+        >
+          <span aria-hidden="true" />
+          <span aria-hidden="true" />
+          <span aria-hidden="true" />
+        </button>
+      </div>
+
+      <div
+        id="mobile-navigation"
+        className={`mobileMenu ${isMenuOpen ? "isOpen" : ""}`}
+        aria-hidden={!isMenuOpen}
+      >
+        <nav className="mobileNav" aria-label="Mobile navigation">
+          <a href="#home" onClick={closeMenu}>Home</a>
+          <Link to="/products" onClick={closeMenu}>Products</Link>
+          <a href="#collections" onClick={closeMenu}>Collections</a>
+          <a href="#story" onClick={closeMenu}>Our Story</a>
+          <a href="#credentials" onClick={closeMenu}>Verified Business</a>
+          <a href="#gold-rates" onClick={closeMenu}>Gold Rates</a>
+          <a href="#store" onClick={closeMenu}>Visit Store</a>
+          <button type="button" onClick={() => navigateFromHeader("/cart")}>Cart</button>
+          {customerToken ? (
+            <button type="button" onClick={handleLogout}>Logout</button>
+          ) : (
+            <button type="button" onClick={() => navigateFromHeader("/login")}>Login</button>
+          )}
+        </nav>
       </div>
     </header>
   );
