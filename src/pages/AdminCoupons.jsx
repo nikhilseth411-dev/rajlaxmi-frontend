@@ -16,6 +16,34 @@ const emptyForm = {
   validUntil: "",
 };
 
+function getCouponStatus(coupon, now = new Date()) {
+  if (!coupon.active) {
+    return { label: "Inactive", className: "customerStatusDanger" };
+  }
+
+  const validFrom = coupon.validFrom ? new Date(coupon.validFrom) : null;
+  const validUntil = coupon.validUntil ? new Date(coupon.validUntil) : null;
+
+  if (validFrom && now < validFrom) {
+    return { label: "Not started yet", className: "customerStatusPending" };
+  }
+  if (validUntil && now > validUntil) {
+    return { label: "Expired", className: "customerStatusDanger" };
+  }
+  return { label: "Valid now", className: "customerStatusSuccess" };
+}
+
+function formatCouponDateTime(value) {
+  if (!value) return "No limit";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Not available";
+  return new Intl.DateTimeFormat("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Kolkata",
+  }).format(date);
+}
+
 function AdminCoupons() {
   const navigate = useNavigate();
 
@@ -404,14 +432,17 @@ function AdminCoupons() {
                       <th>Value</th>
                       <th>Min Order</th>
                       <th>Usage</th>
-                      <th>Valid</th>
-                      <th>Active</th>
+                      <th>Status</th>
+                      <th>Valid From</th>
+                      <th>Valid Until</th>
                       <th>Action</th>
                     </tr>
                   </thead>
 
                   <tbody>
-                    {coupons.map((coupon) => (
+                    {coupons.map((coupon) => {
+                      const status = getCouponStatus(coupon);
+                      return (
                       <tr key={coupon.id}>
                         <td><strong>{coupon.code}</strong></td>
                         <td>{coupon.discountType}</td>
@@ -423,15 +454,12 @@ function AdminCoupons() {
                         <td>₹{Number(coupon.minimumOrderAmount || 0).toLocaleString("en-IN")}</td>
                         <td>{coupon.usedCount} / {coupon.usageLimit}</td>
                         <td>
-                          <span className={coupon.valid ? "customerStatus customerStatusSuccess" : "customerStatus customerStatusPending"}>
-                            {coupon.valid ? "Valid" : "Invalid"}
+                          <span className={`customerStatus ${status.className}`}>
+                            {status.label}
                           </span>
                         </td>
-                        <td>
-                          <span className={coupon.active ? "customerStatus customerStatusSuccess" : "customerStatus customerStatusDanger"}>
-                            {coupon.active ? "Active" : "Inactive"}
-                          </span>
-                        </td>
+                        <td>{formatCouponDateTime(coupon.validFrom)}</td>
+                        <td>{formatCouponDateTime(coupon.validUntil)}</td>
                         <td>
                           <button
                             type="button"
@@ -452,7 +480,8 @@ function AdminCoupons() {
                           )}
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
