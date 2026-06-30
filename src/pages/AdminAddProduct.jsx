@@ -32,6 +32,11 @@ const initialForm = {
   featured: true,
 };
 
+const SKU_PATTERN = /^RLJ-[A-Z]+-\d{3,6}$/;
+const VALID_METAL_TYPES = new Set(["GOLD", "SILVER", "DIAMOND"]);
+const VALID_GOLD_PURITIES = new Set(["GOLD_18K", "GOLD_22K", "GOLD_24K"]);
+const VALID_MAKING_CHARGE_TYPES = new Set(["FIXED", "PER_GRAM"]);
+
 function inferProductCategory(category, fallback = "GOLD_JEWELLERY") {
   const source = `${category?.name || category?.categoryName || ""} ${category?.slug || ""}`
     .toLowerCase();
@@ -70,31 +75,31 @@ function AdminAddProduct() {
       return;
     }
 
-    fetchCategories();
-  }, []);
+    async function fetchCategories() {
+      setFetchingCategories(true);
 
-  async function fetchCategories() {
-    setFetchingCategories(true);
+      try {
+        const response = await fetch(`${API_BASE_URL}/categories`);
+        const data = await response.json();
 
-    try {
-      const response = await fetch(`${API_BASE_URL}/categories`);
-      const data = await response.json();
+        const list =
+          data.data?.content ||
+          data.data ||
+          data.content ||
+          data ||
+          [];
 
-      const list =
-        data.data?.content ||
-        data.data ||
-        data.content ||
-        data ||
-        [];
-
-      setCategories(Array.isArray(list) ? list : []);
-    } catch (err) {
-      console.log("Category fetch failed:", err);
-      setCategories([]);
-    } finally {
-      setFetchingCategories(false);
+        setCategories(Array.isArray(list) ? list : []);
+      } catch (err) {
+        console.log("Category fetch failed:", err);
+        setCategories([]);
+      } finally {
+        setFetchingCategories(false);
+      }
     }
-  }
+
+    fetchCategories();
+  }, [navigate, token]);
 
   function handleChange(event) {
     const { name, value, type, checked } = event.target;
@@ -123,7 +128,7 @@ function AdminAddProduct() {
   function generateSku() {
     const randomNumber = Math.floor(1000 + Math.random() * 9000);
 
-    let categoryCode = "GOLD";
+    let categoryCode;
 
     if (form.metalType === "SILVER" || form.productCategory === "SILVER_COLLECTION") {
       categoryCode = "SILVER";
@@ -132,8 +137,6 @@ function AdminAddProduct() {
       form.productCategory === "DIAMOND_JEWELLERY"
     ) {
       categoryCode = "DIAMOND";
-    } else if (form.metalType === "PLATINUM") {
-      categoryCode = "PLATINUM";
     } else {
       categoryCode = "GOLD";
     }
@@ -153,51 +156,62 @@ function AdminAddProduct() {
     setError("");
 
     try {
-      const missing = [];
-
-      if (!form.name.trim()) missing.push("Product Name");
-      if (!form.sku.trim()) missing.push("SKU");
-      if (!form.description.trim()) missing.push("Description");
-      if (!form.categoryId) missing.push("Category");
-
-      if (!form.weightGrams || Number(form.weightGrams) <= 0) {
-        missing.push("Weight in Grams");
-      }
-
-      if (!form.makingCharges || Number(form.makingCharges) < 0) {
-        missing.push("Making Charges");
-      }
-
-      if (form.stoneCharges === "" || Number(form.stoneCharges) < 0) {
-        missing.push("Stone Charges");
-      }
-
-      if (!form.gstPercentage || Number(form.gstPercentage) < 0) {
-        missing.push("GST Percentage");
-      }
-
-      if (form.stockQuantity === "" || Number(form.stockQuantity) < 0) {
-        missing.push("Stock Quantity");
-      }
-
-      if (form.lowStockThreshold === "" || Number(form.lowStockThreshold) < 0) {
-        missing.push("Low Stock Threshold");
-      }
-
-      if (missing.length > 0) {
-        throw new Error("Please fill/correct these fields: " + missing.join(", "));
-      }
-
+      const invalidFields = [];
+      const productName = form.name.trim();
+      const normalizedSku = form.sku.trim().toUpperCase();
+      const categoryId = Number(form.categoryId);
       const weightValue = Number(form.weightGrams);
       const makingValue = Number(form.makingCharges);
-      const stoneValue = Number(form.stoneCharges || 0);
-      const gstValue = Number(form.gstPercentage || 3);
+      const stoneValue = Number(form.stoneCharges);
+      const gstValue = Number(form.gstPercentage);
       const stockValue = Number(form.stockQuantity);
-      const lowStockValue = Number(form.lowStockThreshold || 1);
+      const lowStockValue = Number(form.lowStockThreshold);
+
+      if (productName.length < 3 || productName.length > 200) {
+        invalidFields.push("Product Name must be 3 to 200 characters");
+      }
+      if (!SKU_PATTERN.test(normalizedSku)) {
+        invalidFields.push("SKU must look like RLJ-GOLD-1234 (use Generate)");
+      }
+      if (!form.description.trim()) invalidFields.push("Description is required");
+      if (!Number.isInteger(categoryId) || categoryId < 1) {
+        invalidFields.push("Category is required");
+      }
+      if (!VALID_METAL_TYPES.has(form.metalType)) {
+        invalidFields.push("Metal Type must be Gold, Silver, or Diamond");
+      }
+      if (!VALID_GOLD_PURITIES.has(form.goldPurity)) {
+        invalidFields.push("Gold Purity must be 18K, 22K, or 24K");
+      }
+      if (!Number.isFinite(weightValue) || weightValue < 0.01 || weightValue > 9999.99) {
+        invalidFields.push("Weight must be between 0.01 and 9999.99 grams");
+      }
+      if (!Number.isFinite(makingValue) || makingValue < 0) {
+        invalidFields.push("Making Charges must be zero or more");
+      }
+      if (!VALID_MAKING_CHARGE_TYPES.has(form.makingChargesType)) {
+        invalidFields.push("Making Charge Type must be Fixed or Per Gram");
+      }
+      if (!Number.isFinite(stoneValue) || stoneValue < 0) {
+        invalidFields.push("Stone Charges must be zero or more");
+      }
+      if (!Number.isFinite(gstValue) || gstValue < 0 || gstValue > 28) {
+        invalidFields.push("GST Percentage must be between 0 and 28");
+      }
+      if (!Number.isInteger(stockValue) || stockValue < 0) {
+        invalidFields.push("Stock Quantity must be a whole number of zero or more");
+      }
+      if (!Number.isInteger(lowStockValue) || lowStockValue < 1) {
+        invalidFields.push("Low Stock Threshold must be a whole number of one or more");
+      }
+
+      if (invalidFields.length > 0) {
+        throw new Error("Please correct: " + invalidFields.join("; "));
+      }
 
       const requestBody = {
-        name: form.name.trim(),
-        sku: form.sku.trim().toUpperCase(),
+        name: productName,
+        sku: normalizedSku,
         description: form.description.trim(),
         categoryId: Number(form.categoryId),
 
@@ -243,8 +257,6 @@ function AdminAddProduct() {
         isActive: true,
       };
 
-      console.log("Create product payload:", requestBody);
-
       const response = await fetch(`${API_BASE_URL}/admin/products`, {
         method: "POST",
         headers: {
@@ -255,9 +267,6 @@ function AdminAddProduct() {
       });
 
       const text = await response.text();
-      console.log("Create product status:", response.status);
-      console.log("Create product response:", text);
-
       let data = null;
 
       try {
@@ -273,7 +282,14 @@ function AdminAddProduct() {
           throw new Error("Admin session expired. Please login again.");
         }
 
+        const validationDetails =
+          data?.data && typeof data.data === "object" && !Array.isArray(data.data)
+            ? Object.entries(data.data)
+                .map(([field, detail]) => `${field}: ${detail}`)
+                .join("; ")
+            : "";
         const backendError =
+          validationDetails ||
           data?.message ||
           data?.error ||
           data?.details ||
@@ -344,6 +360,8 @@ function AdminAddProduct() {
                   value={form.name}
                   onChange={handleChange}
                   placeholder="Example: 22K Gold Ring"
+                  minLength={3}
+                  maxLength={200}
                   required
                 />
               </label>
@@ -356,6 +374,8 @@ function AdminAddProduct() {
                     value={form.sku}
                     onChange={handleChange}
                     placeholder="Click Generate SKU"
+                    pattern="RLJ-[A-Z]+-[0-9]{3,6}"
+                    title="Use format RLJ-GOLD-1234 or click Generate"
                     required
                   />
                   <button type="button" onClick={generateSku}>
@@ -436,7 +456,6 @@ function AdminAddProduct() {
                   <option value="GOLD">Gold</option>
                   <option value="SILVER">Silver</option>
                   <option value="DIAMOND">Diamond</option>
-                  <option value="PLATINUM">Platinum</option>
                 </select>
               </label>
 
@@ -450,7 +469,6 @@ function AdminAddProduct() {
                   <option value="GOLD_24K">24K</option>
                   <option value="GOLD_22K">22K</option>
                   <option value="GOLD_18K">18K</option>
-                  <option value="GOLD_14K">14K</option>
                 </select>
               </label>
             </div>
@@ -465,6 +483,8 @@ function AdminAddProduct() {
                 <input
                   type="number"
                   step="0.01"
+                  min="0.01"
+                  max="9999.99"
                   name="weightGrams"
                   value={form.weightGrams}
                   onChange={handleChange}
@@ -478,6 +498,7 @@ function AdminAddProduct() {
                 <input
                   type="number"
                   step="0.01"
+                  min="0"
                   name="makingCharges"
                   value={form.makingCharges}
                   onChange={handleChange}
@@ -495,7 +516,6 @@ function AdminAddProduct() {
                 >
                   <option value="FIXED">Fixed Amount</option>
                   <option value="PER_GRAM">Per Gram</option>
-                  <option value="PERCENTAGE">Percentage</option>
                 </select>
               </label>
 
@@ -504,6 +524,7 @@ function AdminAddProduct() {
                 <input
                   type="number"
                   step="0.01"
+                  min="0"
                   name="stoneCharges"
                   value={form.stoneCharges}
                   onChange={handleChange}
@@ -516,6 +537,8 @@ function AdminAddProduct() {
                 <input
                   type="number"
                   step="0.01"
+                  min="0"
+                  max="28"
                   name="gstPercentage"
                   value={form.gstPercentage}
                   onChange={handleChange}
@@ -534,6 +557,8 @@ function AdminAddProduct() {
                 Stock Quantity
                 <input
                   type="number"
+                  min="0"
+                  step="1"
                   name="stockQuantity"
                   value={form.stockQuantity}
                   onChange={handleChange}
@@ -546,6 +571,8 @@ function AdminAddProduct() {
                 Low Stock Threshold
                 <input
                   type="number"
+                  min="1"
+                  step="1"
                   name="lowStockThreshold"
                   value={form.lowStockThreshold}
                   onChange={handleChange}
