@@ -48,62 +48,63 @@ function AdminEditProduct() {
     }));
   };
 
-  const fetchProduct = async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      const response = await fetch(`${API_BASE}/products/${productId}`);
-      const text = await response.text();
-
-      console.log("Edit product fetch status:", response.status);
-      console.log("Edit product fetch response:", text);
-
-      const data = text ? JSON.parse(text) : null;
-
-      if (!response.ok) {
-        throw new Error(data?.message || text || "Unable to load product.");
-      }
-
-      const product = data?.data || data;
-
-      setForm({
-        name: product.name || "",
-        sku: product.sku || "",
-        description: product.description || "",
-        categoryId: product.categoryId || "",
-        productCategory: product.productCategory || "GOLD_JEWELLERY",
-        metalType: product.metalType || "GOLD",
-        goldPurity: product.goldPurity || "GOLD_22K",
-        weightGrams: product.weightGrams || "",
-        makingCharges: product.makingCharges || "",
-        makingChargesType: product.makingChargesType || "FIXED",
-        stoneCharges: product.stoneCharges || 0,
-        gstPercentage: product.gstPercentage || 3,
-        bisHallmarkNumber: product.bisHallmarkNumber || "",
-        occasion: product.occasion || "",
-        gender: product.gender || "",
-        dimensions: product.dimensions || "",
-        finish: product.finish || "",
-        metaTitle: product.metaTitle || product.name || "",
-        metaDescription: product.metaDescription || "",
-        stockQuantity: product.inventory?.quantity ?? product.stockQuantity ?? "",
-        lowStockThreshold: product.inventory?.lowStockThreshold ?? product.lowStockThreshold ?? 1,
-        bisHallmarked: Boolean(product.bisHallmarked),
-        newArrival: Boolean(product.newArrival),
-        bestSeller: Boolean(product.bestSeller),
-        featured: Boolean(product.featured),
-      });
-    } catch (err) {
-      console.error("Fetch product error:", err);
-      setError(err.message || "Unable to load product.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    let active = true;
+
+    async function fetchProduct() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await fetch(`${API_BASE}/products/${productId}`);
+        const text = await response.text();
+        const data = text ? JSON.parse(text) : null;
+
+        if (!response.ok) {
+          throw new Error(data?.message || text || "Unable to load product.");
+        }
+
+        if (!active) return;
+        const product = data?.data || data;
+
+        setForm({
+          name: product.name || "",
+          sku: product.sku || "",
+          description: product.description || "",
+          categoryId: product.categoryId || "",
+          productCategory: product.productCategory || "GOLD_JEWELLERY",
+          metalType: product.metalType || "GOLD",
+          goldPurity: product.goldPurity || "GOLD_22K",
+          weightGrams: product.weightGrams || "",
+          makingCharges: product.makingChargesValue ?? product.makingCharges ?? "",
+          makingChargesType: product.makingChargesType || "FIXED",
+          stoneCharges: product.stoneCharges || 0,
+          gstPercentage: product.gstPercentage || 3,
+          bisHallmarkNumber: product.bisHallmarkNumber || "",
+          occasion: product.occasion || "",
+          gender: product.gender || "",
+          dimensions: product.dimensions || "",
+          finish: product.finish || "",
+          metaTitle: product.metaTitle || product.name || "",
+          metaDescription: product.metaDescription || "",
+          stockQuantity: product.inventory?.quantity ?? product.stockQuantity ?? "",
+          lowStockThreshold: product.inventory?.lowStockThreshold ?? product.lowStockThreshold ?? 1,
+          bisHallmarked: Boolean(product.bisHallmarked),
+          newArrival: Boolean(product.newArrival),
+          bestSeller: Boolean(product.bestSeller),
+          featured: Boolean(product.featured),
+        });
+      } catch (err) {
+        if (active) setError(err.message || "Unable to load product.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
     fetchProduct();
+    return () => {
+      active = false;
+    };
   }, [productId]);
 
   const handleSubmit = async (e) => {
@@ -354,10 +355,19 @@ function AdminEditProduct() {
           </div>
 
           <div>
-            <label>Making Charges</label>
+            <label>
+              Making Charges
+              {form.makingChargesType === "PERCENTAGE"
+                ? " (%)"
+                : form.makingChargesType === "PER_GRAM"
+                  ? " (per gram)"
+                  : " (fixed amount)"}
+            </label>
             <input
               type="number"
               step="0.01"
+              min="0"
+              max={form.makingChargesType === "PERCENTAGE" ? "100" : undefined}
               value={form.makingCharges}
               onChange={(e) => updateField("makingCharges", e.target.value)}
             />
@@ -369,8 +379,9 @@ function AdminEditProduct() {
               value={form.makingChargesType}
               onChange={(e) => updateField("makingChargesType", e.target.value)}
             >
-              <option value="FIXED">FIXED</option>
-              <option value="PERCENTAGE">PERCENTAGE</option>
+              <option value="FIXED">Fixed Amount</option>
+              <option value="PER_GRAM">Per Gram</option>
+              <option value="PERCENTAGE">Percent of Metal Value</option>
             </select>
           </div>
 

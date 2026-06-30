@@ -35,7 +35,7 @@ const initialForm = {
 const SKU_PATTERN = /^RLJ-[A-Z]+-\d{3,6}$/;
 const VALID_METAL_TYPES = new Set(["GOLD", "SILVER", "DIAMOND"]);
 const VALID_GOLD_PURITIES = new Set(["GOLD_18K", "GOLD_22K", "GOLD_24K"]);
-const VALID_MAKING_CHARGE_TYPES = new Set(["FIXED", "PER_GRAM"]);
+const VALID_MAKING_CHARGE_TYPES = new Set(["FIXED", "PER_GRAM", "PERCENTAGE"]);
 
 function inferProductCategory(category, fallback = "GOLD_JEWELLERY") {
   const source = `${category?.name || category?.categoryName || ""} ${category?.slug || ""}`
@@ -190,7 +190,10 @@ function AdminAddProduct() {
         invalidFields.push("Making Charges must be zero or more");
       }
       if (!VALID_MAKING_CHARGE_TYPES.has(form.makingChargesType)) {
-        invalidFields.push("Making Charge Type must be Fixed or Per Gram");
+        invalidFields.push("Making Charge Type must be Fixed, Per Gram, or Percentage");
+      }
+      if (form.makingChargesType === "PERCENTAGE" && makingValue > 100) {
+        invalidFields.push("Percentage Making Charges cannot exceed 100%");
       }
       if (!Number.isFinite(stoneValue) || stoneValue < 0) {
         invalidFields.push("Stone Charges must be zero or more");
@@ -495,10 +498,16 @@ function AdminAddProduct() {
 
               <label>
                 Making Charges
+                {form.makingChargesType === "PERCENTAGE"
+                  ? " (%)"
+                  : form.makingChargesType === "PER_GRAM"
+                    ? " (per gram)"
+                    : " (fixed amount)"}
                 <input
                   type="number"
                   step="0.01"
                   min="0"
+                  max={form.makingChargesType === "PERCENTAGE" ? "100" : undefined}
                   name="makingCharges"
                   value={form.makingCharges}
                   onChange={handleChange}
@@ -516,6 +525,7 @@ function AdminAddProduct() {
                 >
                   <option value="FIXED">Fixed Amount</option>
                   <option value="PER_GRAM">Per Gram</option>
+                  <option value="PERCENTAGE">Percent of Metal Value</option>
                 </select>
               </label>
 
