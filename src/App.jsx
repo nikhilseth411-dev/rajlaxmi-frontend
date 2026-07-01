@@ -114,8 +114,37 @@ function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
+    let active = true;
+
+    async function fetchGoldRates() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/gold-rates/current`);
+        const result = await response.json();
+        if (active) setGoldRates(result.data);
+      } catch (error) {
+        console.error("Gold rates error:", error);
+      }
+    }
+
+    async function fetchHomepageProducts() {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/products?page=0&size=12&sortBy=createdAt&sortDir=desc`,
+        );
+        if (!response.ok) return;
+
+        const products = extractProducts(await response.json());
+        if (active && products.length > 0) setHomepageProducts(products);
+      } catch (error) {
+        console.error("Featured products error:", error);
+      }
+    }
+
     fetchGoldRates();
     fetchHomepageProducts();
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -126,30 +155,6 @@ function HomePage() {
     return () => clearInterval(timer);
   }, []);
 
-  async function fetchGoldRates() {
-    try {
-      const response = await fetch(`${API_BASE_URL}/gold-rates/current`);
-      const result = await response.json();
-      setGoldRates(result.data);
-    } catch (error) {
-      console.error("Gold rates error:", error);
-    }
-  }
-
-  async function fetchHomepageProducts() {
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}/products?page=0&size=12&sortBy=createdAt&sortDir=desc`,
-      );
-      if (!response.ok) return;
-
-      const products = extractProducts(await response.json());
-      if (products.length > 0) setHomepageProducts(products);
-    } catch (error) {
-      console.error("Featured products error:", error);
-    }
-  }
-
   return (
     <div className="site">
       <TopTicker goldRates={goldRates} />
@@ -157,11 +162,11 @@ function HomePage() {
 
       <main>
         <Hero currentSlide={currentSlide} setCurrentSlide={setCurrentSlide} />
-        <ShopByCategory />
         <TrustStrip />
-        <Heritage />
-        <Collections />
+        <ShopByCategory />
         <FeaturedJewellery products={homepageProducts} />
+        <Collections />
+        <Heritage />
         <Credentials />
         <GoldRates goldRates={goldRates} />
         <VisitStore />
@@ -199,13 +204,9 @@ function TopTicker({ goldRates }) {
 
 function Header() {
   const navigate = useNavigate();
-  const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const customerToken = localStorage.getItem("rajlaxmi_customer_token");
-
-  useEffect(() => {
-    setIsMenuOpen(false);
-  }, [location.pathname, location.search]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -230,6 +231,13 @@ function Header() {
     navigate(path);
   };
 
+  const handleHeaderSearch = (event) => {
+    event.preventDefault();
+    const query = searchTerm.trim();
+    navigate(query ? `/products?search=${encodeURIComponent(query)}` : "/products");
+    closeMenu();
+  };
+
   const handleLogout = () => {
     closeMenu();
     localStorage.removeItem("rajlaxmi_customer_token");
@@ -244,6 +252,21 @@ function Header() {
           <h1>RajLaxmi Jewellers</h1>
           <p>Bhagwan Das & Sons · Est. 1984</p>
         </div>
+      </a>
+
+      <form className="headerSearch" role="search" onSubmit={handleHeaderSearch}>
+        <input
+          type="search"
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.target.value)}
+          placeholder="Search for jewellery"
+          aria-label="Search jewellery"
+        />
+        <button type="submit" aria-label="Submit jewellery search">&#128269;</button>
+      </form>
+
+      <a className="headerPhone" href="tel:+919102316789">
+        <span aria-hidden="true">&#9742;</span> +91 91023 16789
       </a>
 
       <nav className="nav" aria-label="Primary navigation">
@@ -929,10 +952,41 @@ function CustomerNavbar() {
   );
 }
 
+function CustomerMobileToolbar() {
+  const location = useLocation();
+  const customerToken = localStorage.getItem("rajlaxmi_customer_token");
+  const isAdminPage =
+    location.pathname.startsWith("/admin") || location.pathname === "/adminlogin";
+  const isFullPage =
+    location.pathname.startsWith("/order-success") ||
+    location.pathname.startsWith("/payment");
+
+  if (isAdminPage || isFullPage) return null;
+
+  return (
+    <nav className="mobileToolbar" aria-label="Quick navigation">
+      <Link to="/"><span aria-hidden="true">&#8962;</span>Home</Link>
+      <Link to="/products"><span aria-hidden="true">&#9670;</span>Shop</Link>
+      <a
+        href="https://wa.me/919102316789?text=Namaste%2C%20I%20want%20to%20enquire%20about%20jewellery."
+        target="_blank"
+        rel="noreferrer"
+      >
+        <span aria-hidden="true">&#9742;</span>WhatsApp
+      </a>
+      <Link to="/cart"><span aria-hidden="true">&#128722;</span>Cart</Link>
+      <Link to={customerToken ? "/profile" : "/login"}>
+        <span aria-hidden="true">&#9675;</span>{customerToken ? "Account" : "Login"}
+      </Link>
+    </nav>
+  );
+}
+
 function App() {
   return (
     <>
       <CustomerNavbar />
+      <CustomerMobileToolbar />
 
       <Routes>
         <Route path="/" element={<HomePage />} />

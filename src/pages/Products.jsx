@@ -85,13 +85,14 @@ function Products() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedCategory = (searchParams.get("category") || "").trim();
+  const requestedSearch = (searchParams.get("search") || "").trim();
   const fallbackOptions = buildCategoryOptions([]);
   const initialCategoryFilter = resolveCategoryFilter(requestedCategory, fallbackOptions);
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [keyword, setKeyword] = useState(
-    requestedCategory && !initialCategoryFilter ? requestedCategory : "",
+    requestedSearch || (requestedCategory && !initialCategoryFilter ? requestedCategory : ""),
   );
   const [metalType, setMetalType] = useState("");
   const [categoryFilter, setCategoryFilter] = useState(initialCategoryFilter);
@@ -177,7 +178,8 @@ function Products() {
 
       const options = buildCategoryOptions(categoryList);
       const resolvedFilter = resolveCategoryFilter(requestedCategory, options);
-      const resolvedKeyword = requestedCategory && !resolvedFilter ? requestedCategory : "";
+      const resolvedKeyword =
+        requestedSearch || (requestedCategory && !resolvedFilter ? requestedCategory : "");
 
       if (!active) return;
       setCategories(categoryList);
@@ -196,7 +198,7 @@ function Products() {
     };
     // Initial filters are passed explicitly; state-based fetches happen from form actions.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [requestedCategory]);
+  }, [requestedCategory, requestedSearch]);
 
   const handleSearch = (event) => {
     event.preventDefault();
