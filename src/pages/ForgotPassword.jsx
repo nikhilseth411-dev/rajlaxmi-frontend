@@ -105,7 +105,7 @@ function ForgotPassword() {
       setMessage(data?.message || "Password reset successfully.");
 
       setTimeout(() => {
-        navigate("/login");
+        navigate("/email-login");
       }, 1200);
     } catch (err) {
       console.error("Reset password error:", err);
@@ -194,7 +194,7 @@ function ForgotPassword() {
         )}
 
         <p className="authSwitchText">
-          Remember password? <Link to="/login">Login here</Link>
+          Remember password? <Link to="/email-login">Login here</Link>
         </p>
       </section>
     </main>

@@ -56,7 +56,7 @@ function VerifyOtp() {
       setMessage("Email verified successfully. Please login now.");
 
       setTimeout(() => {
-        navigate("/login");
+        navigate("/email-login");
       }, 1200);
     } catch (err) {
       console.error("Verify OTP error:", err);
@@ -157,7 +157,7 @@ function VerifyOtp() {
         </button>
 
         <p className="authSwitchText">
-          Already verified? <Link to="/login">Login here</Link>
+          Already verified? <Link to="/email-login">Login here</Link>
         </p>
       </section>
     </main>

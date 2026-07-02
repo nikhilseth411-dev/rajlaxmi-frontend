@@ -12,7 +12,7 @@ function PhoneOtpLogin() {
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const redirect = searchParams.get("redirect") || "/checkout";
+  const redirect = searchParams.get("redirect") || "/products";
 
   const requestOtp = async (event) => {
     event.preventDefault();
@@ -114,7 +114,7 @@ function PhoneOtpLogin() {
           </button>
         )}
         <div className="customerLoginLinks">
-          <Link to={`/login?redirect=${encodeURIComponent(redirect)}`}>Use email and password instead</Link>
+          <Link to={`/email-login?redirect=${encodeURIComponent(redirect)}`}>Use email and password instead</Link>
         </div>
       </section>
     </main>

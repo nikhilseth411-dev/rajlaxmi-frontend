@@ -1010,8 +1010,9 @@ function App() {
         <Route path="/admin/account" element={<AdminAccountSettings />} />
         <Route path="/products" element={<Products />} />
         <Route path="/products/:productId" element={<ProductDetail />} />
-        <Route path="/login" element={<CustomerLogin />} />
+        <Route path="/login" element={<PhoneOtpLogin />} />
         <Route path="/phone-login" element={<PhoneOtpLogin />} />
+        <Route path="/email-login" element={<CustomerLogin />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/order-success/:orderId" element={<OrderSuccess />} />
