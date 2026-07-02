@@ -102,8 +102,10 @@ function PhoneOtpLogin() {
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 value={otp}
-                onChange={(event) => setOtp(event.target.value.replace(/\D/g, "").slice(0, 8))}
-                placeholder="Enter OTP"
+                onChange={(event) => setOtp(event.target.value.replace(/\D/g, "").slice(0, 6))}
+                pattern="[0-9]{6}"
+                maxLength={6}
+                placeholder="Enter 6-digit OTP"
                 required
                 autoFocus
               />
