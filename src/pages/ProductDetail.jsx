@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import "../styles/customer.css";
 
 import { API_BASE_URL as API_BASE, BACKEND_BASE_URL as BACKEND_BASE } from "../config/api";
+import { addGuestCartItem } from "../utils/guestCart";
 
 const formatPrice = (value) => {
   if (value === null || value === undefined || value === "") return "Not available";
@@ -21,7 +22,17 @@ const getWeight = (product) =>
 
 const formatWeight = (product) => {
   const weight = Number(getWeight(product));
-  return Number.isFinite(weight) ? `${weight.toFixed(2)} gm` : "Not available";
+  return Number.isFinite(weight) ? `${weight.toFixed(3)} gm` : "Not available";
+};
+
+const formatMakingCharge = (product) => {
+  const type = String(product.makingChargesType || "").toUpperCase();
+  if (type === "PERCENTAGE" || type === "PERCENT") {
+    return `${Number(product.makingChargesValue || 0)}%`;
+  }
+  if (type === "PER_GRAM") return "Per gram";
+  if (type === "FIXED") return "Fixed";
+  return "Not specified";
 };
 
 function ProductDetail() {
@@ -35,7 +46,7 @@ function ProductDetail() {
 
   const getImageUrl = (imageUrl) => {
     if (!imageUrl) {
-      return "/images/logo/shop-logo.jpeg";
+      return "/images/placeholders/jewellery-display.webp";
     }
 
     if (imageUrl.startsWith("http")) {
@@ -106,7 +117,8 @@ function ProductDetail() {
       const token = localStorage.getItem("rajlaxmi_customer_token");
 
       if (!token) {
-        navigate(`/login?redirect=/products/${product.id}`);
+        addGuestCartItem(product);
+        navigate("/cart");
         return;
       }
 
@@ -210,7 +222,7 @@ function ProductDetail() {
                 src={getImageUrl(selectedImage)}
                 alt={product.name}
                 onError={(e) => {
-                  e.currentTarget.src = "/images/logo/shop-logo.jpeg";
+                  e.currentTarget.src = "/images/placeholders/jewellery-display.webp";
                 }}
               />
             </div>
@@ -230,7 +242,7 @@ function ProductDetail() {
                       src={getImageUrl(image.imageUrl)}
                       alt={image.altText || product.name}
                       onError={(e) => {
-                        e.currentTarget.src = "/images/logo/shop-logo.jpeg";
+                        e.currentTarget.src = "/images/placeholders/jewellery-display.webp";
                       }}
                     />
                   </button>
@@ -254,6 +266,7 @@ function ProductDetail() {
             <p className="productDetailPrice">
               {finalPriceText}
             </p>
+            <p className="productDetailPriceContext">Final price calculated for {formatWeight(product)}</p>
 
             <p className="productDetailStock">
               {inventoryQuantity > 0
@@ -298,10 +311,7 @@ function ProductDetail() {
 
               <div>
                 <span>Making Charges</span>
-                <strong>
-                  {formatPrice(product.makingCharges)}
-                  {product.makingChargesType ? ` (${product.makingChargesType.replace("_", " ")})` : ""}
-                </strong>
+                <strong>{formatMakingCharge(product)}</strong>
               </div>
 
               <div>
@@ -311,9 +321,7 @@ function ProductDetail() {
 
               <div>
                 <span>GST</span>
-                <strong>
-                  {product.gstPercentage || 0}% ({formatPrice(product.gstAmount)})
-                </strong>
+                <strong>{product.gstPercentage || 0}%</strong>
               </div>
 
               <div>

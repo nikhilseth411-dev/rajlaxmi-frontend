@@ -934,6 +934,15 @@
   background: #6d3a1f;
 }
 
+.admin-product-actions .admin-delete-product-btn {
+  background: #8f1f1f;
+}
+
+.admin-product-actions button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 .adminSidebarNav button.active {
   background: #8a4f21;
   box-shadow: inset 3px 0 0 #f5d76e;

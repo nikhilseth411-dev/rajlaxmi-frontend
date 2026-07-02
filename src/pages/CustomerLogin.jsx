@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import "../styles/customer.css";
 
 import { API_BASE_URL as API_BASE } from "../config/api";
+import { syncGuestCart } from "../utils/guestCart";
 
 function CustomerLogin() {
   const navigate = useNavigate();
@@ -64,6 +65,8 @@ function CustomerLogin() {
 
       localStorage.setItem("rajlaxmi_customer_token", token);
 
+      await syncGuestCart(token);
+
       navigate(redirect);
     } catch (err) {
       console.error("Customer login error:", err);
@@ -80,7 +83,7 @@ function CustomerLogin() {
 
         <p>Raj Laxmi Jewellers</p>
         <h1>Customer Login</h1>
-        <span>Login to add products to cart and place your order.</span>
+        <span>Login to securely continue to checkout and place your order.</span>
 
         {error && <div className="customerError">{error}</div>}
 

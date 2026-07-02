@@ -11,6 +11,8 @@ function AdminGoldRates() {
   const [currentRate, setCurrentRate] = useState(null);
   const [form, setForm] = useState({
     rate24K: "",
+    rate22K: "",
+    rate18K: "",
     reason: "Manual rate updated by shop owner",
   });
 
@@ -65,9 +67,11 @@ function AdminGoldRates() {
 
     try {
       const rate24K = Number(form.rate24K);
+      const rate22K = Number(form.rate22K);
+      const rate18K = Number(form.rate18K);
 
-      if (!rate24K || rate24K <= 0) {
-        throw new Error("Please enter valid 24K gold rate");
+      if ([rate24K, rate22K, rate18K].some((rate) => !rate || rate < 1000)) {
+        throw new Error("Please enter valid 24K, 22K, and 18K gold rates");
       }
 
       const response = await fetch(`${API_BASE_URL}/admin/gold-rates/override`, {
@@ -78,6 +82,8 @@ function AdminGoldRates() {
         },
         body: JSON.stringify({
           rate24KPerGram: rate24K,
+          rate22KPerGram: rate22K,
+          rate18KPerGram: rate18K,
           reason: form.reason,
         }),
       });
@@ -104,44 +110,13 @@ function AdminGoldRates() {
       setForm((previous) => ({
         ...previous,
         rate24K: "",
+        rate22K: "",
+        rate18K: "",
       }));
 
       await fetchCurrentRate();
     } catch (err) {
       setError(err.message || "Unable to update gold rate");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function removeManualRate() {
-    const confirmDelete = window.confirm(
-      "Do you want to remove manual gold rate and revert to API rate?"
-    );
-
-    if (!confirmDelete) return;
-
-    setLoading(true);
-    setMessage("");
-    setError("");
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/admin/gold-rates/override`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || "Unable to remove manual rate");
-      }
-
-      setMessage("Manual rate removed successfully!");
-      await fetchCurrentRate();
-    } catch (err) {
-      setError(err.message || "Unable to remove manual rate");
     } finally {
       setLoading(false);
     }
@@ -207,21 +182,16 @@ function AdminGoldRates() {
               </div>
             )}
 
-            <button
-              type="button"
-              className="adminDangerBtn"
-              onClick={removeManualRate}
-              disabled={loading}
-            >
-              Remove Manual Rate
-            </button>
+            <p className="adminMuted">
+              These rates stay active through refreshes and redeploys until you save new rates.
+            </p>
           </section>
 
           <section className="goldRateCard">
             <h2>Update Manual Gold Rate</h2>
             <p className="adminMuted">
-              Enter 24K rate. Backend will calculate other purity rates and
-              product prices.
+              Enter the shop's current per-gram rate for each purity. Product
+              prices update from these saved values.
             </p>
 
             <form className="adminForm" onSubmit={updateGoldRate}>
@@ -233,6 +203,36 @@ function AdminGoldRates() {
                   value={form.rate24K}
                   onChange={handleChange}
                   placeholder="Example: 7300"
+                  min="1000"
+                  step="0.01"
+                  required
+                />
+              </label>
+
+              <label>
+                22K Gold Rate Per Gram
+                <input
+                  type="number"
+                  name="rate22K"
+                  value={form.rate22K}
+                  onChange={handleChange}
+                  placeholder="Example: 6687"
+                  min="1000"
+                  step="0.01"
+                  required
+                />
+              </label>
+
+              <label>
+                18K Gold Rate Per Gram
+                <input
+                  type="number"
+                  name="rate18K"
+                  value={form.rate18K}
+                  onChange={handleChange}
+                  placeholder="Example: 5475"
+                  min="1000"
+                  step="0.01"
                   required
                 />
               </label>

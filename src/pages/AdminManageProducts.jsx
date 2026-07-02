@@ -28,11 +28,12 @@ function AdminManageProducts() {
   const [products, setProducts] = useState([]);
   const [keyword, setKeyword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const [error, setError] = useState("");
 
   const getImageUrl = (imageUrl) => {
     if (!imageUrl) {
-      return "/images/logo/shop-logo.jpeg";
+      return "/images/placeholders/jewellery-display.webp";
     }
 
     if (imageUrl.startsWith("http")) {
@@ -111,6 +112,35 @@ function AdminManageProducts() {
     fetchProducts();
   };
 
+  const deleteProduct = async (product) => {
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
+
+    const token = localStorage.getItem("rajlaxmi_admin_token");
+    if (!token) {
+      navigate("/adminlogin");
+      return;
+    }
+
+    try {
+      setDeletingId(product.id);
+      setError("");
+      const response = await fetch(`${API_BASE}/admin/products/${product.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const text = await response.text();
+      const data = text ? JSON.parse(text) : null;
+      if (!response.ok) {
+        throw new Error(data?.message || "Unable to delete this product.");
+      }
+      setProducts((current) => current.filter((item) => item.id !== product.id));
+    } catch (err) {
+      setError(err.message || "Unable to delete this product.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <div className="admin-page">
       <div className="admin-card admin-wide-card">
@@ -172,7 +202,7 @@ function AdminManageProducts() {
                   alt={product.name}
                   className="admin-product-image"
                   onError={(e) => {
-                    e.currentTarget.src = "/images/logo/shop-logo.jpeg";
+                    e.currentTarget.src = "/images/placeholders/jewellery-display.webp";
                   }}
                 />
 
@@ -232,6 +262,15 @@ function AdminManageProducts() {
                       onClick={() => navigate(`/admin/products/${product.id}/edit`)}
                     >
                       Edit
+                    </button>
+
+                    <button
+                      type="button"
+                      className="admin-delete-product-btn"
+                      disabled={deletingId === product.id}
+                      onClick={() => deleteProduct(product)}
+                    >
+                      {deletingId === product.id ? "Deleting..." : "Delete"}
                     </button>
                   </div>
                 </div>

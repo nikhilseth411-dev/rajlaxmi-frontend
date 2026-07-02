@@ -3,6 +3,11 @@ import { useNavigate } from "react-router-dom";
 import "../styles/customer.css";
 
 import { API_BASE_URL as API_BASE } from "../config/api";
+import {
+  clearGuestCart,
+  getGuestCart,
+  updateGuestCartItem,
+} from "../utils/guestCart";
 
 function Cart() {
   const navigate = useNavigate();
@@ -16,7 +21,7 @@ function Cart() {
   const getToken = () => localStorage.getItem("rajlaxmi_customer_token");
 
   const getImageUrl = (imageUrl) => {
-    if (!imageUrl) return "/images/logo/shop-logo.jpeg";
+    if (!imageUrl) return "/images/placeholders/jewellery-display.webp";
 
     if (imageUrl.startsWith("http")) return encodeURI(imageUrl);
 
@@ -48,7 +53,8 @@ function Cart() {
       const token = getToken();
 
       if (!token) {
-        navigate("/login?redirect=/cart");
+        setCart(null);
+        setItems(getGuestCart());
         return;
       }
 
@@ -101,7 +107,7 @@ function Cart() {
       const token = getToken();
 
       if (!token) {
-        navigate("/login?redirect=/cart");
+        setItems(updateGuestCartItem(productId, quantity));
         return;
       }
 
@@ -150,7 +156,9 @@ function Cart() {
       const token = getToken();
 
       if (!token) {
-        navigate("/login?redirect=/cart");
+        clearGuestCart();
+        setCart(null);
+        setItems([]);
         return;
       }
 
@@ -247,7 +255,7 @@ function Cart() {
                       src={getImageUrl(getItemImage(item))}
                       alt={getProductName(item)}
                       onError={(e) => {
-                        e.currentTarget.src = "/images/logo/shop-logo.jpeg";
+                        e.currentTarget.src = "/images/placeholders/jewellery-display.webp";
                       }}
                     />
 
@@ -311,9 +319,16 @@ function Cart() {
                 <strong>₹{Number(cartTotal).toLocaleString("en-IN")}</strong>
               </div>
 
-              <button type="button" onClick={() => navigate("/checkout")}>
+              <button
+                type="button"
+                onClick={() => navigate(getToken() ? "/checkout" : "/phone-login?redirect=/checkout")}
+              >
                 Proceed to Checkout
               </button>
+
+              {!getToken() && (
+                <p className="guestCheckoutNote">Phone verification is required only at checkout.</p>
+              )}
 
               <button type="button" className="clearCartBtn" onClick={clearCart}>
                 Clear Cart

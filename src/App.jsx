@@ -14,6 +14,7 @@ import AdminPayments from "./pages/AdminPayments";
 import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
 import CustomerLogin from "./pages/CustomerLogin";
+import PhoneOtpLogin from "./pages/PhoneOtpLogin";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
@@ -75,7 +76,7 @@ const extractProducts = (data) => {
 };
 
 const getProductImageUrl = (imageUrl) => {
-  if (!imageUrl) return "/images/logo/shop-logo.jpeg";
+  if (!imageUrl) return "/images/placeholders/jewellery-display.webp";
   if (imageUrl.startsWith("http")) return encodeURI(imageUrl);
 
   const cleanPath = imageUrl.startsWith("/") ? imageUrl.slice(1) : imageUrl;
@@ -105,7 +106,7 @@ const formatProductPrice = (value) => {
 
 const formatProductWeight = (item) => {
   const weight = Number(item?.weightGrams ?? item?.weightInGrams ?? item?.weight);
-  return Number.isFinite(weight) ? `${weight.toFixed(2)} gm` : null;
+  return Number.isFinite(weight) ? `${weight.toFixed(3)} gm` : null;
 };
 
 function HomePage() {
@@ -659,7 +660,13 @@ function FeaturedJewellery({ products }) {
             aria-label={`View ${item.name}`}
           >
             <div className="jewelleryImage">
-              <img src={imageUrl} alt={item.name} />
+              <img
+                src={imageUrl}
+                alt={item.name}
+                onError={(event) => {
+                  event.currentTarget.src = "/images/placeholders/jewellery-display.webp";
+                }}
+              />
             </div>
 
             <div className="jewelleryInfo">
@@ -668,6 +675,7 @@ function FeaturedJewellery({ products }) {
               <span className="jewellerySpecs">{purity}</span>
               {weightText && <span className="jewelleryWeight">Weight: {weightText}</span>}
               <strong>{priceText}</strong>
+              {weightText && <small className="jewelleryPriceContext">Final price for {weightText}</small>}
             </div>
           </Link>
           );
@@ -1003,6 +1011,7 @@ function App() {
         <Route path="/products" element={<Products />} />
         <Route path="/products/:productId" element={<ProductDetail />} />
         <Route path="/login" element={<CustomerLogin />} />
+        <Route path="/phone-login" element={<PhoneOtpLogin />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/order-success/:orderId" element={<OrderSuccess />} />

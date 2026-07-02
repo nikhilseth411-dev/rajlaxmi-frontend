@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import "../styles/customer.css";
 
 import { API_BASE_URL as API_BASE, BACKEND_BASE_URL as BACKEND_BASE } from "../config/api";
@@ -19,6 +19,20 @@ const FALLBACK_CATEGORIES = [
   ["Bridal Collection", "BRIDAL_COLLECTION"],
   ["Temple Jewellery", "TEMPLE_JEWELLERY"],
 ].map(([name, productCategory]) => ({ name, productCategory }));
+
+const PRICE_RANGES = [
+  { value: "under-5000", label: "Under ₹5,000", min: 0, max: 5000 },
+  { value: "5000-10000", label: "₹5,000 - ₹10,000", min: 5000, max: 10000 },
+  { value: "10000-20000", label: "₹10,000 - ₹20,000", min: 10000, max: 20000 },
+  { value: "20000-25000", label: "₹20,000 - ₹25,000", min: 20000, max: 25000 },
+  { value: "25000-30000", label: "₹25,000 - ₹30,000", min: 25000, max: 30000 },
+  { value: "30000-40000", label: "₹30,000 - ₹40,000", min: 30000, max: 40000 },
+  { value: "40000-50000", label: "₹40,000 - ₹50,000", min: 40000, max: 50000 },
+  { value: "50000-60000", label: "₹50,000 - ₹60,000", min: 50000, max: 60000 },
+  { value: "60000-80000", label: "₹60,000 - ₹80,000", min: 60000, max: 80000 },
+  { value: "80000-100000", label: "₹80,000 - ₹1,00,000", min: 80000, max: 100000 },
+  { value: "above-100000", label: "Above ₹1,00,000", min: 100000, max: null },
+];
 
 const normalizeCategory = (value) =>
   String(value || "")
@@ -67,7 +81,17 @@ const getWeight = (product) =>
 
 const formatWeight = (product) => {
   const weight = Number(getWeight(product));
-  return Number.isFinite(weight) ? `${weight.toFixed(2)} gm` : "Not available";
+  return Number.isFinite(weight) ? `${weight.toFixed(3)} gm` : "Not available";
+};
+
+const formatMakingCharge = (product) => {
+  const type = String(product.makingChargesType || "").toUpperCase();
+  if (type === "PERCENTAGE" || type === "PERCENT") {
+    return `Making Charges: ${Number(product.makingChargesValue || 0)}%`;
+  }
+  if (type === "PER_GRAM") return "Making Charges: Per gram";
+  if (type === "FIXED") return "Making Charges: Fixed";
+  return null;
 };
 
 const formatPrice = (value) => {
@@ -82,7 +106,6 @@ const formatPrice = (value) => {
 };
 
 function Products() {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedCategory = (searchParams.get("category") || "").trim();
   const requestedSearch = (searchParams.get("search") || "").trim();
@@ -96,6 +119,7 @@ function Products() {
   );
   const [metalType, setMetalType] = useState("");
   const [categoryFilter, setCategoryFilter] = useState(initialCategoryFilter);
+  const [priceFilter, setPriceFilter] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -103,9 +127,18 @@ function Products() {
   const selectedCategoryName =
     categoryOptions.find((option) => option.value === categoryFilter)?.name ||
     requestedCategory;
+  const selectedPriceRange = PRICE_RANGES.find((range) => range.value === priceFilter);
+  const visibleProducts = selectedPriceRange
+    ? products.filter((product) => {
+        const price = Number(product.finalPrice);
+        if (!Number.isFinite(price)) return false;
+        if (selectedPriceRange.max === null) return price > selectedPriceRange.min;
+        return price >= selectedPriceRange.min && price <= selectedPriceRange.max;
+      })
+    : products;
 
   const getImageUrl = (imageUrl) => {
-    if (!imageUrl) return "/images/logo/shop-logo.jpeg";
+    if (!imageUrl) return "/images/placeholders/jewellery-display.webp";
     if (imageUrl.startsWith("http")) return encodeURI(imageUrl);
 
     const cleanPath = imageUrl.startsWith("/") ? imageUrl.substring(1) : imageUrl;
@@ -145,7 +178,7 @@ function Products() {
       }
 
       params.append("page", "0");
-      params.append("size", "30");
+      params.append("size", "100");
       params.append("sortBy", "createdAt");
       params.append("sortDir", "desc");
 
@@ -209,6 +242,7 @@ function Products() {
     setKeyword("");
     setMetalType("");
     setCategoryFilter("");
+    setPriceFilter("");
     setSearchParams({});
     fetchProducts({ keyword: "", metalType: "", categoryFilter: "" });
   };
@@ -223,43 +257,80 @@ function Products() {
 
       <section className="productsContainer">
         <form className="productsFilterBar" onSubmit={handleSearch}>
-          <input
-            type="text"
-            value={keyword}
-            onChange={(event) => setKeyword(event.target.value)}
-            placeholder="Search jewellery by name or SKU"
-          />
+          <div className="filterField filterCategoryField">
+            <label htmlFor="product-category">1. Choose jewellery</label>
+            <select
+              id="product-category"
+              value={categoryFilter}
+              onChange={(event) => setCategoryFilter(event.target.value)}
+            >
+              <option value="">All Jewellery</option>
+              {categoryOptions.map((option) => (
+                <option key={option.value} value={option.value}>{option.name}</option>
+              ))}
+            </select>
+          </div>
 
-          <select value={metalType} onChange={(event) => setMetalType(event.target.value)}>
-            <option value="">All Metals</option>
-            <option value="GOLD">Gold</option>
-            <option value="SILVER">Silver</option>
-            <option value="DIAMOND">Diamond</option>
-          </select>
+          <div className="filterField filterPriceField">
+            <label htmlFor="product-price">2. Choose your budget</label>
+            <select
+              id="product-price"
+              value={priceFilter}
+              onChange={(event) => setPriceFilter(event.target.value)}
+            >
+              <option value="">All Prices</option>
+              {PRICE_RANGES.map((range) => (
+                <option key={range.value} value={range.value}>{range.label}</option>
+              ))}
+            </select>
+          </div>
 
-          <select
-            value={categoryFilter}
-            onChange={(event) => setCategoryFilter(event.target.value)}
-          >
-            <option value="">All Categories</option>
-            {categoryOptions.map((option) => (
-              <option key={option.value} value={option.value}>{option.name}</option>
-            ))}
-          </select>
+          <div className="filterField filterSearchField">
+            <label htmlFor="product-search">Search</label>
+            <input
+              id="product-search"
+              type="text"
+              value={keyword}
+              onChange={(event) => setKeyword(event.target.value)}
+              placeholder="Name or SKU"
+            />
+          </div>
+
+          <div className="filterField filterMetalField">
+            <label htmlFor="product-metal">Metal</label>
+            <select id="product-metal" value={metalType} onChange={(event) => setMetalType(event.target.value)}>
+              <option value="">All Metals</option>
+              <option value="GOLD">Gold</option>
+              <option value="SILVER">Silver</option>
+              <option value="DIAMOND">Diamond</option>
+            </select>
+          </div>
 
           <button type="submit" disabled={loading}>
-            {loading ? "Searching..." : "Search"}
+            {loading ? "Applying..." : "Apply filters"}
           </button>
           <button type="button" className="outlineBtn" onClick={resetFilters}>Reset</button>
         </form>
 
+        {!loading && !error && products.length > 0 && (
+          <div className="productResultsSummary" aria-live="polite">
+            <strong>{visibleProducts.length}</strong>
+            {visibleProducts.length === 1 ? " design" : " designs"}
+            {selectedPriceRange ? ` in ${selectedPriceRange.label}` : " available"}
+          </div>
+        )}
+
         {error && <div className="customerError">{error}</div>}
         {loading && <div className="customerLoading">Loading jewellery...</div>}
 
-        {!loading && !error && products.length === 0 && (
+        {!loading && !error && visibleProducts.length === 0 && (
           <div className="customerEmptyBox">
             <h2>No products found{selectedCategoryName ? ` in ${selectedCategoryName}` : ""}.</h2>
-            <p>Explore the full collection or ask the store about new arrivals.</p>
+            <p>
+              {selectedPriceRange
+                ? `There are no designs in ${selectedPriceRange.label} right now. Try another budget.`
+                : "Explore the full collection or ask the store about new arrivals."}
+            </p>
             <div className="customerEmptyActions">
               <button type="button" onClick={resetFilters}>Explore all products</button>
               <a
@@ -273,16 +344,16 @@ function Products() {
           </div>
         )}
 
-        {!loading && products.length > 0 && (
+        {!loading && visibleProducts.length > 0 && (
           <div className="productGrid">
-            {products.map((product) => (
-              <article className="productCard" key={product.id}>
+            {visibleProducts.map((product) => (
+              <Link className="productCard" key={product.id} to={`/products/${product.id}`}>
                 <div className="productImageBox">
                   <img
                     src={getImageUrl(product.primaryImageUrl)}
                     alt={product.name}
                     onError={(event) => {
-                      event.currentTarget.src = "/images/logo/shop-logo.jpeg";
+                      event.currentTarget.src = "/images/placeholders/jewellery-display.webp";
                     }}
                   />
                   {product.featured && <span className="productBadge">Featured</span>}
@@ -298,6 +369,12 @@ function Products() {
                   </p>
                   <p className="productWeight">Weight: <strong>{formatWeight(product)}</strong></p>
                   <p className="productPrice">{formatPrice(product.finalPrice)}</p>
+                  <p className="productPriceContext">Final price for {formatWeight(product)}</p>
+
+                  <div className="productChargeLabels">
+                    {formatMakingCharge(product) && <span>{formatMakingCharge(product)}</span>}
+                    <span>GST: {Number(product.gstPercentage || 0)}%</span>
+                  </div>
 
                   <div className="productSmallBadges">
                     {product.bisHallmarked && <span>BIS Hallmarked</span>}
@@ -308,11 +385,9 @@ function Products() {
                   <p className={product.inStock || product.stockQuantity > 0 ? "stockText inStock" : "stockText outStock"}>
                     {product.inStock || product.stockQuantity > 0 ? "In Stock" : "Out of Stock"}
                   </p>
-                  <button type="button" onClick={() => navigate(`/products/${product.id}`)}>
-                    View Details
-                  </button>
+                  <span className="productViewButton">View Details</span>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
         )}
