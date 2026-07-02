@@ -13,6 +13,7 @@ function PhoneOtpLogin() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const redirect = searchParams.get("redirect") || "/products";
+  const isCheckoutFlow = redirect === "/checkout";
 
   const requestOtp = async (event) => {
     event.preventDefault();
@@ -62,9 +63,15 @@ function PhoneOtpLogin() {
     <main className="customerLoginPage phoneOtpPage">
       <section className="customerLoginCard">
         <img src="/images/logo/shop-logo.jpeg" alt="Raj Laxmi Jewellers" />
-        <p>Secure Checkout</p>
+        <p>{isCheckoutFlow ? "Secure Checkout" : "Customer Login"}</p>
         <h1>{otpSent ? "Verify mobile" : "Continue with mobile"}</h1>
-        <span>{otpSent ? `Enter the OTP sent to +91 ${phone}.` : "We only ask you to verify your number at checkout."}</span>
+        <span>
+          {otpSent
+            ? `Enter the OTP sent to +91 ${phone}.`
+            : isCheckoutFlow
+              ? "Verify your mobile number to continue securely to checkout."
+              : "Login securely with a one-time password sent to your mobile."}
+        </span>
 
         {error && <div className="customerError">{error}</div>}
 
