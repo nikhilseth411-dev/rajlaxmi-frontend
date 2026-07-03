@@ -3,6 +3,48 @@ import { useNavigate, useParams } from "react-router-dom";
 import "../styles/admin.css";
 import { API_BASE_URL as API_BASE } from "../config/api";
 
+const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
+const MAX_IMAGE_DIMENSION = 2000;
+
+async function optimizeProductImage(originalFile) {
+  if (originalFile.size <= MAX_UPLOAD_BYTES) return originalFile;
+
+  const sourceUrl = URL.createObjectURL(originalFile);
+  try {
+    const image = await new Promise((resolve, reject) => {
+      const element = new Image();
+      element.onload = () => resolve(element);
+      element.onerror = () => reject(new Error("This image could not be processed. Please choose another image."));
+      element.src = sourceUrl;
+    });
+
+    const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(image.naturalWidth, image.naturalHeight));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("This browser could not prepare the image for upload.");
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    let optimizedBlob = null;
+    for (const quality of [0.86, 0.76, 0.66]) {
+      optimizedBlob = await new Promise((resolve) => canvas.toBlob(resolve, "image/webp", quality));
+      if (optimizedBlob && optimizedBlob.size <= MAX_UPLOAD_BYTES) break;
+    }
+    if (!optimizedBlob || optimizedBlob.size > MAX_UPLOAD_BYTES) {
+      throw new Error("The image is still too large. Please choose an image smaller than 5 MB.");
+    }
+
+    const baseName = originalFile.name.replace(/\.[^.]+$/, "") || "product-image";
+    return new File([optimizedBlob], `${baseName}.webp`, {
+      type: "image/webp",
+      lastModified: Date.now(),
+    });
+  } finally {
+    URL.revokeObjectURL(sourceUrl);
+  }
+}
+
 function AdminProductImages() {
   const { productId } = useParams();
   const navigate = useNavigate();
@@ -11,6 +53,8 @@ function AdminProductImages() {
   const [preview, setPreview] = useState("");
   const [isPrimary, setIsPrimary] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [optimizationNote, setOptimizationNote] = useState("");
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
   const fileInputRef = useRef(null);
@@ -19,21 +63,34 @@ function AdminProductImages() {
     if (preview) URL.revokeObjectURL(preview);
     setFile(null);
     setPreview("");
+    setOptimizationNote("");
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const selectedFile = e.target.files[0];
-
-    setFile(selectedFile);
     setSuccess("");
     setError("");
+    setOptimizationNote("");
 
     if (selectedFile) {
-      if (preview) URL.revokeObjectURL(preview);
-      setPreview(URL.createObjectURL(selectedFile));
+      try {
+        setProcessing(true);
+        const preparedFile = await optimizeProductImage(selectedFile);
+        if (preview) URL.revokeObjectURL(preview);
+        setFile(preparedFile);
+        setPreview(URL.createObjectURL(preparedFile));
+        if (preparedFile !== selectedFile) {
+          setOptimizationNote(`Optimized for upload (${(preparedFile.size / 1024 / 1024).toFixed(2)} MB).`);
+        }
+      } catch (err) {
+        clearSelectedImage();
+        setError(err.message || "This image could not be prepared for upload.");
+      } finally {
+        setProcessing(false);
+      }
     } else {
-      setPreview("");
+      clearSelectedImage();
     }
   };
 
@@ -62,23 +119,32 @@ function AdminProductImages() {
       // IMPORTANT: backend expects "file", not "files"
       formData.append("file", file);
 
-      const response = await fetch(
-        `${API_BASE}/admin/products/${productId}/images?isPrimary=${isPrimary}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formData,
-        }
-      );
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 45000);
+      let response;
+      try {
+        response = await fetch(
+          `${API_BASE}/admin/products/${productId}/images?isPrimary=${isPrimary}`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            body: formData,
+            signal: controller.signal,
+          }
+        );
+      } finally {
+        window.clearTimeout(timeout);
+      }
 
       const text = await response.text();
-
-      console.log("Image upload status:", response.status);
-      console.log("Image upload response:", text);
-
-      const data = text ? JSON.parse(text) : null;
+      let data = null;
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch {
+        data = null;
+      }
 
       if (response.status === 401 || response.status === 403) {
         localStorage.removeItem("rajlaxmi_admin_token");
@@ -95,8 +161,13 @@ function AdminProductImages() {
       setSuccess("Product image uploaded successfully!");
       clearSelectedImage();
     } catch (err) {
-      console.error("Image upload error:", err);
-      setError(err.message || "Something went wrong while uploading image.");
+      if (err.name === "AbortError") {
+        setError("The upload took too long. Please check your connection and try again.");
+      } else if (err instanceof TypeError) {
+        setError("Unable to reach the upload server. Please check your connection and try again.");
+      } else {
+        setError(err.message || "Something went wrong while uploading image.");
+      }
     } finally {
       setLoading(false);
     }
@@ -118,7 +189,11 @@ function AdminProductImages() {
             type="file"
             accept="image/jpeg,image/png,image/webp"
             onChange={handleFileChange}
+            disabled={processing || loading}
           />
+
+          {processing && <p className="admin-upload-note">Preparing image...</p>}
+          {optimizationNote && <p className="admin-upload-note">{optimizationNote}</p>}
 
           {preview && (
             <div className="admin-image-preview-box">
@@ -154,8 +229,8 @@ function AdminProductImages() {
             Set as Primary Image
           </label>
 
-          <button type="submit" disabled={loading}>
-            {loading ? "Uploading..." : "Upload Image"}
+          <button type="submit" disabled={loading || processing || !file}>
+            {processing ? "Preparing..." : loading ? "Uploading..." : "Upload Image"}
           </button>
         </form>
 

@@ -1262,3 +1262,9 @@
     padding: 18px;
   }
 }
+.admin-upload-note {
+  margin: 8px 0 0;
+  color: #704015;
+  font-size: 13px;
+  font-weight: 700;
+}
