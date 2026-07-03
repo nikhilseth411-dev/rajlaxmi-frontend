@@ -4,6 +4,38 @@ import { API_BASE_URL } from "../config/api";
 import { syncGuestCart } from "../utils/guestCart";
 import "../styles/customer.css";
 
+const SMS_UNAVAILABLE_MESSAGE =
+  "SMS OTP is not available right now. Please try again later or contact the shop.";
+
+function getCustomerOtpError(message, action) {
+  const normalized = String(message || "").toLowerCase();
+  if (
+    normalized.includes("not configured") ||
+    normalized.includes("unable to send sms") ||
+    normalized.includes("failed to fetch") ||
+    normalized.includes("networkerror")
+  ) {
+    return SMS_UNAVAILABLE_MESSAGE;
+  }
+
+  const allowedMessages = [
+    "please wait one minute",
+    "please request a new otp",
+    "otp has expired",
+    "too many invalid attempts",
+    "invalid otp",
+    "otp must be a 6-digit number",
+    "please provide a valid 10-digit indian mobile number",
+  ];
+  if (allowedMessages.some((allowed) => normalized.includes(allowed))) {
+    return message;
+  }
+
+  return action === "send"
+    ? SMS_UNAVAILABLE_MESSAGE
+    : "We couldn't verify that OTP. Please check the code and try again.";
+}
+
 function PhoneOtpLogin() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -26,10 +58,10 @@ function PhoneOtpLogin() {
         body: JSON.stringify({ phone }),
       });
       const data = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(data?.message || "Unable to send OTP.");
+      if (!response.ok) throw new Error(getCustomerOtpError(data?.message, "send"));
       setOtpSent(true);
     } catch (err) {
-      setError(err.message || "Unable to send OTP.");
+      setError(getCustomerOtpError(err.message, "send"));
     } finally {
       setLoading(false);
     }
@@ -46,14 +78,14 @@ function PhoneOtpLogin() {
         body: JSON.stringify({ phone, otp }),
       });
       const data = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(data?.message || "Unable to verify OTP.");
+      if (!response.ok) throw new Error(getCustomerOtpError(data?.message, "verify"));
       const token = data?.data?.accessToken || data?.accessToken;
       if (!token) throw new Error("Phone verified but login could not be completed.");
       localStorage.setItem("rajlaxmi_customer_token", token);
       await syncGuestCart(token);
       navigate(redirect);
     } catch (err) {
-      setError(err.message || "Unable to verify OTP.");
+      setError(getCustomerOtpError(err.message, "verify"));
     } finally {
       setLoading(false);
     }
@@ -73,7 +105,7 @@ function PhoneOtpLogin() {
               : "Login securely with a one-time password sent to your mobile."}
         </span>
 
-        {error && <div className="customerError">{error}</div>}
+        {error && <div className="customerError" role="alert" aria-live="polite">{error}</div>}
 
         <form className="customerLoginForm" onSubmit={otpSent ? verifyOtp : requestOtp}>
           <label>

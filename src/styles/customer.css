@@ -768,6 +768,26 @@
   cursor: pointer;
 }
 
+@media (max-width: 420px) {
+  .customerLoginPage {
+    padding: 14px;
+  }
+
+  .customerLoginCard {
+    padding: 22px 18px;
+    border-radius: 14px;
+  }
+
+  .customerLoginCard img {
+    width: 72px;
+    height: 72px;
+  }
+
+  .customerLoginCard h1 {
+    font-size: 28px;
+  }
+}
+
 .customerLoginLinks {
   margin-top: 16px;
 }
