@@ -12,6 +12,8 @@ function getCustomerOtpError(message, action) {
   if (
     normalized.includes("not configured") ||
     normalized.includes("unable to send sms") ||
+    normalized.includes("verification is unavailable") ||
+    normalized.includes("unable to verify sms") ||
     normalized.includes("failed to fetch") ||
     normalized.includes("networkerror")
   ) {
@@ -22,8 +24,10 @@ function getCustomerOtpError(message, action) {
     "please wait one minute",
     "please request a new otp",
     "otp has expired",
+    "otp expired",
     "too many invalid attempts",
     "invalid otp",
+    "incorrect otp",
     "otp must be a 6-digit number",
     "please provide a valid 10-digit indian mobile number",
   ];
