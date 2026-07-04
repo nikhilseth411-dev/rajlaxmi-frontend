@@ -3,8 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import "../styles/admin.css";
 import { API_BASE_URL as API_BASE } from "../config/api";
 
-const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
-const MAX_IMAGE_DIMENSION = 2000;
+const MAX_UPLOAD_BYTES = 1.5 * 1024 * 1024;
+const MAX_IMAGE_DIMENSION = 1600;
 
 async function optimizeProductImage(originalFile) {
   if (originalFile.size <= MAX_UPLOAD_BYTES) return originalFile;
@@ -27,12 +27,12 @@ async function optimizeProductImage(originalFile) {
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
 
     let optimizedBlob = null;
-    for (const quality of [0.86, 0.76, 0.66]) {
+    for (const quality of [0.82, 0.72, 0.62, 0.52]) {
       optimizedBlob = await new Promise((resolve) => canvas.toBlob(resolve, "image/webp", quality));
       if (optimizedBlob && optimizedBlob.size <= MAX_UPLOAD_BYTES) break;
     }
     if (!optimizedBlob || optimizedBlob.size > MAX_UPLOAD_BYTES) {
-      throw new Error("The image is still too large. Please choose an image smaller than 5 MB.");
+      throw new Error("This image is too large to prepare safely. Please choose a smaller image.");
     }
 
     const baseName = originalFile.name.replace(/\.[^.]+$/, "") || "product-image";
@@ -45,6 +45,34 @@ async function optimizeProductImage(originalFile) {
   }
 }
 
+function uploadImageRequest(url, token, formData, onProgress) {
+  return new Promise((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    request.open("POST", url);
+    request.timeout = 120000;
+    request.setRequestHeader("Authorization", `Bearer ${token}`);
+
+    request.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        onProgress(Math.min(99, Math.round((event.loaded / event.total) * 100)));
+      }
+    };
+    request.onload = () => resolve({ status: request.status, text: request.responseText || "" });
+    request.onerror = () => reject(new TypeError("Upload connection failed."));
+    request.ontimeout = () => {
+      const error = new Error("The upload took too long. Please check your connection and try again.");
+      error.name = "TimeoutError";
+      reject(error);
+    };
+    request.onabort = () => {
+      const error = new Error("The upload was cancelled. Please try again.");
+      error.name = "AbortError";
+      reject(error);
+    };
+    request.send(formData);
+  });
+}
+
 function AdminProductImages() {
   const { productId } = useParams();
   const navigate = useNavigate();
@@ -53,6 +81,7 @@ function AdminProductImages() {
   const [preview, setPreview] = useState("");
   const [isPrimary, setIsPrimary] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [processing, setProcessing] = useState(false);
   const [optimizationNote, setOptimizationNote] = useState("");
   const [success, setSuccess] = useState("");
@@ -99,6 +128,7 @@ function AdminProductImages() {
 
     try {
       setLoading(true);
+      setUploadProgress(0);
       setSuccess("");
       setError("");
 
@@ -119,26 +149,14 @@ function AdminProductImages() {
       // IMPORTANT: backend expects "file", not "files"
       formData.append("file", file);
 
-      const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), 45000);
-      let response;
-      try {
-        response = await fetch(
-          `${API_BASE}/admin/products/${productId}/images?isPrimary=${isPrimary}`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            body: formData,
-            signal: controller.signal,
-          }
-        );
-      } finally {
-        window.clearTimeout(timeout);
-      }
+      const response = await uploadImageRequest(
+        `${API_BASE}/admin/products/${productId}/images?isPrimary=${isPrimary}`,
+        token,
+        formData,
+        setUploadProgress
+      );
 
-      const text = await response.text();
+      const text = response.text;
       let data = null;
       try {
         data = text ? JSON.parse(text) : null;
@@ -152,13 +170,14 @@ function AdminProductImages() {
         return;
       }
 
-      if (!response.ok) {
+      if (response.status < 200 || response.status >= 300) {
         throw new Error(
           data?.message || text || `Image upload failed. Status: ${response.status}`
         );
       }
 
       setSuccess("Product image uploaded successfully!");
+      setUploadProgress(100);
       clearSelectedImage();
     } catch (err) {
       if (err.name === "AbortError") {
@@ -170,6 +189,7 @@ function AdminProductImages() {
       }
     } finally {
       setLoading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -194,6 +214,9 @@ function AdminProductImages() {
 
           {processing && <p className="admin-upload-note">Preparing image...</p>}
           {optimizationNote && <p className="admin-upload-note">{optimizationNote}</p>}
+          {loading && uploadProgress > 0 && (
+            <p className="admin-upload-note">Uploading: {uploadProgress}%</p>
+          )}
 
           {preview && (
             <div className="admin-image-preview-box">
