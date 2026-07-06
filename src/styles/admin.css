@@ -302,6 +302,21 @@
   color: #7a6a55;
 }
 
+.silverRateBox {
+  background: #f4f3f0;
+  border-color: #c9c5bb;
+}
+
+.derivedRatePreview {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border-left: 3px solid #b8860b;
+  background: #fff7df;
+  color: #4b260c;
+  font-weight: 800;
+}
+
 .adminForm {
   display: grid;
   gap: 18px;

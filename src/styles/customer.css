@@ -40,7 +40,7 @@
 
 .productsFilterBar {
   display: grid;
-  grid-template-columns: minmax(190px, 1fr) minmax(210px, 1.1fr) minmax(180px, 1fr) 150px auto auto;
+  grid-template-columns: repeat(5, minmax(140px, 1fr)) auto auto;
   align-items: end;
   gap: 12px;
   background: white;

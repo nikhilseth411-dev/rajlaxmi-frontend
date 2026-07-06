@@ -42,6 +42,12 @@ function inferProductCategory(category, fallback = "GOLD_JEWELLERY") {
     .toLowerCase();
 
   if (source.includes("mangalsutra")) return "MANGALSUTRA";
+  if (source.includes("mangtika") || source.includes("maang tikka")) return "MANGTIKA";
+  if (source.includes("dholna")) return "DHOLNA";
+  if (source.includes("nathiya") || source.includes("nath")) return "NATHIYA";
+  if (source.includes("jhumka")) return "JHUMKA";
+  if (source.includes("tops")) return "TOPS";
+  if (source.includes("locket")) return "LOCKETS";
   if (source.includes("earring")) return "EARRINGS";
   if (source.includes("necklace")) return "NECKLACES";
   if (source.includes("bangle")) return "BANGLES";
@@ -115,6 +121,8 @@ function AdminAddProduct() {
           selectedCategory,
           previous.productCategory,
         ),
+        metalType: `${selectedCategory?.name || selectedCategory?.slug || ""}`
+          .toLowerCase().includes("silver") ? "SILVER" : previous.metalType,
       }));
       return;
     }
@@ -180,7 +188,7 @@ function AdminAddProduct() {
       if (!VALID_METAL_TYPES.has(form.metalType)) {
         invalidFields.push("Metal Type must be Gold, Silver, or Diamond");
       }
-      if (!VALID_GOLD_PURITIES.has(form.goldPurity)) {
+      if (form.metalType === "GOLD" && !VALID_GOLD_PURITIES.has(form.goldPurity)) {
         invalidFields.push("Gold Purity must be 18K, 22K, or 24K");
       }
       if (!Number.isFinite(weightValue) || weightValue < 0.01 || weightValue > 9999.99) {
@@ -220,7 +228,7 @@ function AdminAddProduct() {
 
         productCategory: form.productCategory,
         metalType: form.metalType,
-        goldPurity: form.goldPurity,
+        goldPurity: form.metalType === "GOLD" ? form.goldPurity : null,
 
         weightGrams: weightValue,
         weightInGrams: weightValue,
@@ -446,6 +454,12 @@ function AdminAddProduct() {
                   <option value="CHAINS">Chains</option>
                   <option value="BRACELETS">Bracelets</option>
                   <option value="ANKLETS">Anklets</option>
+                  <option value="MANGTIKA">Mangtika</option>
+                  <option value="DHOLNA">Dholna</option>
+                  <option value="NATHIYA">Nathiya</option>
+                  <option value="JHUMKA">Jhumka</option>
+                  <option value="TOPS">Tops</option>
+                  <option value="LOCKETS">Lockets</option>
                 </select>
               </label>
 
@@ -468,6 +482,7 @@ function AdminAddProduct() {
                   name="goldPurity"
                   value={form.goldPurity}
                   onChange={handleChange}
+                  disabled={form.metalType !== "GOLD"}
                 >
                   <option value="GOLD_24K">24K</option>
                   <option value="GOLD_22K">22K</option>

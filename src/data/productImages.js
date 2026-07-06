@@ -46,6 +46,48 @@ export const collections = [
     "subtitle": "Traditional mangalsutra designs",
     "image": "/images/products/mangalsutra/Mangalsutra-1.png",
     "count": 2
+  },
+  {
+    "folder": "mangtika",
+    "name": "Mangtika",
+    "subtitle": "Traditional bridal forehead jewellery",
+    "image": "/images/categories/mangtika.png",
+    "count": 1
+  },
+  {
+    "folder": "dholna",
+    "name": "Dholna",
+    "subtitle": "Traditional gold dholna designs",
+    "image": "/images/categories/dholna.png",
+    "count": 1
+  },
+  {
+    "folder": "nathiya",
+    "name": "Nathiya",
+    "subtitle": "Classic bridal nose jewellery",
+    "image": "/images/categories/nathiya.png",
+    "count": 1
+  },
+  {
+    "folder": "jhumka",
+    "name": "Jhumka",
+    "subtitle": "Timeless traditional earrings",
+    "image": "/images/categories/jhumka.png",
+    "count": 1
+  },
+  {
+    "folder": "tops",
+    "name": "Tops",
+    "subtitle": "Elegant everyday gold tops",
+    "image": "/images/categories/tops.png",
+    "count": 1
+  },
+  {
+    "folder": "lockets",
+    "name": "Lockets",
+    "subtitle": "Delicate gold lockets",
+    "image": "/images/categories/lockets.png",
+    "count": 1
   }
 ];
 

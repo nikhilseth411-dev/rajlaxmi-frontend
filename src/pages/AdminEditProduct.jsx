@@ -130,7 +130,7 @@ function AdminEditProduct() {
 
         productCategory: form.productCategory,
         metalType: form.metalType,
-        goldPurity: form.goldPurity,
+        goldPurity: form.metalType === "GOLD" ? form.goldPurity : null,
 
         weightGrams: Number(form.weightGrams),
         makingCharges: Number(form.makingCharges),
@@ -318,6 +318,12 @@ function AdminEditProduct() {
               <option value="CHAINS">CHAINS</option>
               <option value="BRACELETS">BRACELETS</option>
               <option value="ANKLETS">ANKLETS</option>
+              <option value="MANGTIKA">MANGTIKA</option>
+              <option value="DHOLNA">DHOLNA</option>
+              <option value="NATHIYA">NATHIYA</option>
+              <option value="JHUMKA">JHUMKA</option>
+              <option value="TOPS">TOPS</option>
+              <option value="LOCKETS">LOCKETS</option>
             </select>
           </div>
 
@@ -337,6 +343,7 @@ function AdminEditProduct() {
             <select
               value={form.goldPurity}
               onChange={(e) => updateField("goldPurity", e.target.value)}
+              disabled={form.metalType !== "GOLD"}
             >
               <option value="GOLD_24K">GOLD_24K</option>
               <option value="GOLD_22K">GOLD_22K</option>

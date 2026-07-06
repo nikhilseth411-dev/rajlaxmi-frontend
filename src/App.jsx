@@ -45,14 +45,20 @@ const CERTIFICATES = {
 const HERO_SLIDES = featuredJewellery.slice(0, 10).map((item) => item.image);
 
 const SHOP_CATEGORIES = [
-  { name: "Bangles", image: "/images/products/rajkot-bali/RAJKOT-BALI10.jpeg" },
+  { name: "Bangles", image: "/images/categories/bangles.png" },
   { name: "Mangalsutra", image: "/images/products/mangalsutra/Mangalsutra-1.png" },
   { name: "Earrings", image: "/images/products/earrings/EARINGS4.jpeg" },
   { name: "Necklaces", image: "/images/products/choker/CHOKER1_35.893gm.png" },
   { name: "Rings", image: "/images/products/ladies-rings/LADIES-RINGS1.jpeg" },
   { name: "Pendants", image: "/images/products/mangalsutra/Mangalsutra-2.png" },
-  { name: "Chains", image: "/images/products/choker/CHOKER2.png" },
-  { name: "Bracelets", image: "/images/products/rajkot-bali/RAJKOT-BALI12.jpeg" },
+  { name: "Chains", image: "/images/categories/chains.png" },
+  { name: "Bracelets", image: "/images/categories/bracelets.png" },
+  { name: "Mangtika", image: "/images/categories/mangtika.png" },
+  { name: "Dholna", image: "/images/categories/dholna.png" },
+  { name: "Nathiya", image: "/images/categories/nathiya.png" },
+  { name: "Jhumka", image: "/images/categories/jhumka.png" },
+  { name: "Tops", image: "/images/categories/tops.png" },
+  { name: "Lockets", image: "/images/categories/lockets.png" },
 ];
 
 const CATEGORY_QUERY_ALIASES = {
@@ -167,6 +173,7 @@ function HomePage() {
         <ShopByCategory />
         <FeaturedJewellery products={homepageProducts} />
         <Collections />
+        <SilverJewellery goldRates={goldRates} />
         <Heritage />
         <Credentials />
         <GoldRates goldRates={goldRates} />
@@ -622,6 +629,27 @@ function Collections() {
   );
 }
 
+function SilverJewellery({ goldRates }) {
+  return (
+    <section className="silverCollectionBand" aria-labelledby="silver-collection-title">
+      <div className="silverCollectionImage">
+        <img src="/images/placeholders/jewellery-display.webp" alt="Silver jewellery collection" />
+      </div>
+      <div className="silverCollectionContent">
+        <p>925 Sterling & 999 Fine Silver</p>
+        <h2 id="silver-collection-title">Silver Jewellery</h2>
+        <span>Elegant silver pieces with transparent weight-based pricing.</span>
+        {goldRates?.silverRatePer10Gram && (
+          <strong>Today's silver rate: ₹{goldRates.silverRatePer10Gram} / 10 gm</strong>
+        )}
+        <Link to={getCategoryPath("Silver Collection")} className="btn btnPrimary">
+          Explore Silver
+        </Link>
+      </div>
+    </section>
+  );
+}
+
 function FeaturedJewellery({ products }) {
   const hasLiveProducts = products.length > 0;
   const displayItems = hasLiveProducts
@@ -765,7 +793,7 @@ function GoldRates({ goldRates }) {
           <RateCard title="Gold 24K" sub="99.9% Pure" value={goldRates.rate24K} />
           <RateCard title="Gold 22K" sub="91.6% Pure · BIS 916" value={goldRates.rate22K} />
           <RateCard title="Gold 18K" sub="75.0% Pure" value={goldRates.rate18K} />
-          <RateCard title="Silver" sub="999 Fine Silver" value={goldRates.silverRate || "-"} />
+          <RateCard title="Silver" sub="999 Fine Silver" value={goldRates.silverRatePer10Gram || "-"} unit="10 gm" />
         </div>
       ) : (
         <p className="loadingText light">Loading gold rates from backend...</p>
@@ -778,12 +806,12 @@ function GoldRates({ goldRates }) {
   );
 }
 
-function RateCard({ title, sub, value }) {
+function RateCard({ title, sub, value, unit = "gm" }) {
   return (
     <div className="rateCard">
       <p>{title}</p>
       <span>{sub}</span>
-      <h3>₹{value}/gm</h3>
+      <h3>₹{value}/{unit}</h3>
     </div>
   );
 }

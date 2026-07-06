@@ -13,6 +13,12 @@ const FALLBACK_CATEGORIES = [
   ["Pendants", "PENDANTS"],
   ["Chains", "CHAINS"],
   ["Bracelets", "BRACELETS"],
+  ["Mangtika", "MANGTIKA"],
+  ["Dholna", "DHOLNA"],
+  ["Nathiya", "NATHIYA"],
+  ["Jhumka", "JHUMKA"],
+  ["Tops", "TOPS"],
+  ["Lockets", "LOCKETS"],
   ["Gold Jewellery", "GOLD_JEWELLERY"],
   ["Diamond Jewellery", "DIAMOND_JEWELLERY"],
   ["Silver Collection", "SILVER_COLLECTION"],
@@ -118,6 +124,7 @@ function Products() {
     requestedSearch || (requestedCategory && !initialCategoryFilter ? requestedCategory : ""),
   );
   const [metalType, setMetalType] = useState("");
+  const [goldPurity, setGoldPurity] = useState("");
   const [categoryFilter, setCategoryFilter] = useState(initialCategoryFilter);
   const [priceFilter, setPriceFilter] = useState("");
   const [loading, setLoading] = useState(false);
@@ -162,6 +169,7 @@ function Products() {
   const fetchProducts = async (overrides = {}) => {
     const activeKeyword = overrides.keyword ?? keyword;
     const activeMetalType = overrides.metalType ?? metalType;
+    const activeGoldPurity = overrides.goldPurity ?? goldPurity;
     const activeCategoryFilter = overrides.categoryFilter ?? categoryFilter;
 
     try {
@@ -171,6 +179,7 @@ function Products() {
       const params = new URLSearchParams();
       if (activeKeyword.trim()) params.append("keyword", activeKeyword.trim());
       if (activeMetalType) params.append("metalType", activeMetalType);
+      if (activeGoldPurity) params.append("goldPurity", activeGoldPurity);
       if (activeCategoryFilter.startsWith("id:")) {
         params.append("categoryId", activeCategoryFilter.slice(3));
       } else if (activeCategoryFilter.startsWith("enum:")) {
@@ -221,6 +230,7 @@ function Products() {
       await fetchProducts({
         keyword: resolvedKeyword,
         metalType: "",
+        goldPurity: "",
         categoryFilter: resolvedFilter,
       });
     }
@@ -241,10 +251,11 @@ function Products() {
   const resetFilters = () => {
     setKeyword("");
     setMetalType("");
+    setGoldPurity("");
     setCategoryFilter("");
     setPriceFilter("");
     setSearchParams({});
-    fetchProducts({ keyword: "", metalType: "", categoryFilter: "" });
+    fetchProducts({ keyword: "", metalType: "", goldPurity: "", categoryFilter: "" });
   };
 
   return (
@@ -303,6 +314,21 @@ function Products() {
               <option value="GOLD">Gold</option>
               <option value="SILVER">Silver</option>
               <option value="DIAMOND">Diamond</option>
+            </select>
+          </div>
+
+          <div className="filterField filterPurityField">
+            <label htmlFor="product-purity">Gold purity</label>
+            <select
+              id="product-purity"
+              value={goldPurity}
+              onChange={(event) => setGoldPurity(event.target.value)}
+              disabled={metalType === "SILVER"}
+            >
+              <option value="">All Purities</option>
+              <option value="GOLD_18K">18 Karat</option>
+              <option value="GOLD_22K">22 Karat</option>
+              <option value="GOLD_24K">24 Karat</option>
             </select>
           </div>
 

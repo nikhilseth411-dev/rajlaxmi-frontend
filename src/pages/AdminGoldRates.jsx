@@ -11,8 +11,7 @@ function AdminGoldRates() {
   const [currentRate, setCurrentRate] = useState(null);
   const [form, setForm] = useState({
     rate24K: "",
-    rate22K: "",
-    rate18K: "",
+    silverRatePer10Gram: "",
     reason: "Manual rate updated by shop owner",
   });
 
@@ -67,11 +66,13 @@ function AdminGoldRates() {
 
     try {
       const rate24K = Number(form.rate24K);
-      const rate22K = Number(form.rate22K);
-      const rate18K = Number(form.rate18K);
+      const silverRatePer10Gram = Number(form.silverRatePer10Gram);
 
-      if ([rate24K, rate22K, rate18K].some((rate) => !rate || rate < 1000)) {
-        throw new Error("Please enter valid 24K, 22K, and 18K gold rates");
+      if (!rate24K || rate24K < 1000) {
+        throw new Error("Please enter a valid 24K gold rate per gram");
+      }
+      if (!silverRatePer10Gram || silverRatePer10Gram < 1) {
+        throw new Error("Please enter a valid silver rate per 10 grams");
       }
 
       const response = await fetch(`${API_BASE_URL}/admin/gold-rates/override`, {
@@ -82,8 +83,7 @@ function AdminGoldRates() {
         },
         body: JSON.stringify({
           rate24KPerGram: rate24K,
-          rate22KPerGram: rate22K,
-          rate18KPerGram: rate18K,
+          silverRatePer10Gram,
           reason: form.reason,
         }),
       });
@@ -110,8 +110,7 @@ function AdminGoldRates() {
       setForm((previous) => ({
         ...previous,
         rate24K: "",
-        rate22K: "",
-        rate18K: "",
+        silverRatePer10Gram: "",
       }));
 
       await fetchCurrentRate();
@@ -179,6 +178,12 @@ function AdminGoldRates() {
                   <strong>₹{rateData?.rate18K || rateData?.gold18K || "N/A"}</strong>
                   <small>per gram</small>
                 </div>
+
+                <div className="rateBox silverRateBox">
+                  <span>999 Fine Silver</span>
+                  <strong>₹{rateData?.silverRatePer10Gram || "N/A"}</strong>
+                  <small>per 10 grams</small>
+                </div>
               </div>
             )}
 
@@ -190,8 +195,8 @@ function AdminGoldRates() {
           <section className="goldRateCard">
             <h2>Update Manual Gold Rate</h2>
             <p className="adminMuted">
-              Enter the shop's current per-gram rate for each purity. Product
-              prices update from these saved values.
+              Enter only the 24K gold rate. The system calculates 22K and 18K
+              automatically. Enter silver using the market rate per 10 grams.
             </p>
 
             <form className="adminForm" onSubmit={updateGoldRate}>
@@ -209,29 +214,22 @@ function AdminGoldRates() {
                 />
               </label>
 
-              <label>
-                22K Gold Rate Per Gram
-                <input
-                  type="number"
-                  name="rate22K"
-                  value={form.rate22K}
-                  onChange={handleChange}
-                  placeholder="Example: 6687"
-                  min="1000"
-                  step="0.01"
-                  required
-                />
-              </label>
+              {Number(form.rate24K) >= 1000 && (
+                <div className="derivedRatePreview" aria-live="polite">
+                  <span>22K calculated: ₹{(Number(form.rate24K) * 0.916).toFixed(2)} / gm</span>
+                  <span>18K calculated: ₹{(Number(form.rate24K) * 0.75).toFixed(2)} / gm</span>
+                </div>
+              )}
 
               <label>
-                18K Gold Rate Per Gram
+                Silver Rate Per 10 Grams
                 <input
                   type="number"
-                  name="rate18K"
-                  value={form.rate18K}
+                  name="silverRatePer10Gram"
+                  value={form.silverRatePer10Gram}
                   onChange={handleChange}
-                  placeholder="Example: 5475"
-                  min="1000"
+                  placeholder="Example: 1050"
+                  min="1"
                   step="0.01"
                   required
                 />
