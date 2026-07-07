@@ -633,7 +633,7 @@ function SilverJewellery({ goldRates }) {
   return (
     <section className="silverCollectionBand" aria-labelledby="silver-collection-title">
       <div className="silverCollectionImage">
-        <img src="/images/placeholders/jewellery-display.webp" alt="Silver jewellery collection" />
+        <img src="/images/silver/lord-ganesh-silver.png" alt="Silver Lord Ganesh idol" />
       </div>
       <div className="silverCollectionContent">
         <p>925 Sterling & 999 Fine Silver</p>

@@ -305,7 +305,7 @@ function ProductDetail() {
               </div>
 
               <div>
-                <span>Gold Rate Used</span>
+                <span>{product.metalType === "SILVER" ? "Silver Rate Used" : "Gold Rate Used"}</span>
                 <strong>{goldRateText}</strong>
               </div>
 
