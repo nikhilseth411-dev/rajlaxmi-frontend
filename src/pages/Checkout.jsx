@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import "../styles/customer.css";
 
 import { API_BASE_URL as API_BASE } from "../config/api";
+import { loadRazorpayCheckout, openRazorpayCheckout } from "../utils/razorpay";
 
 function Checkout() {
   const navigate = useNavigate();
+  const razorpayEnabled = import.meta.env.VITE_RAZORPAY_ENABLED === "true";
 
   const [cart, setCart] = useState(null);
   const [items, setItems] = useState([]);
@@ -336,6 +338,99 @@ function Checkout() {
     setCouponCode("");
   };
 
+  const createRazorpayOrder = async (orderId, token) => {
+    const response = await fetch(`${API_BASE}/payments/razorpay/orders/${orderId}/create`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : null;
+
+    if (response.status === 401 || response.status === 403) {
+      localStorage.removeItem("rajlaxmi_customer_token");
+      navigate("/login?redirect=/checkout");
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        data?.message ||
+          "Online payment is not available right now. Please use UPI QR payment."
+      );
+    }
+
+    return data?.data || data;
+  };
+
+  const verifyRazorpayPayment = async (orderId, paymentResult, token) => {
+    const response = await fetch(`${API_BASE}/payments/razorpay/verify`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        orderId,
+        razorpayOrderId: paymentResult.razorpay_order_id,
+        razorpayPaymentId: paymentResult.razorpay_payment_id,
+        razorpaySignature: paymentResult.razorpay_signature,
+      }),
+    });
+
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : null;
+
+    if (response.status === 401 || response.status === 403) {
+      localStorage.removeItem("rajlaxmi_customer_token");
+      navigate("/login?redirect=/checkout");
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error(data?.message || "Payment could not be verified.");
+    }
+
+    return data?.data || data;
+  };
+
+  const startRazorpayPayment = async (order, token) => {
+    const orderId = order?.id || order?.orderId;
+    if (!orderId) {
+      throw new Error("Order was created, but payment could not be started.");
+    }
+
+    const razorpayOrder = await createRazorpayOrder(orderId, token);
+    if (!razorpayOrder) return;
+
+    await loadRazorpayCheckout();
+
+    const paymentResult = await openRazorpayCheckout({
+      key: razorpayOrder.keyId,
+      amount: razorpayOrder.amountPaise,
+      currency: razorpayOrder.currency || "INR",
+      name: razorpayOrder.merchantName || "Raj Laxmi Jewellers",
+      description: razorpayOrder.description || `Order ${razorpayOrder.orderNumber}`,
+      order_id: razorpayOrder.razorpayOrderId,
+      prefill: {
+        name: razorpayOrder.customerName || "",
+        email: razorpayOrder.customerEmail || "",
+        contact: razorpayOrder.customerPhone || "",
+      },
+      theme: {
+        color: "#6b2a0c",
+      },
+    });
+
+    await verifyRazorpayPayment(orderId, paymentResult, token);
+
+    navigate(`/order-success/${orderId}`, {
+      state: { order: { ...order, paymentStatus: "SUCCESS", status: "CONFIRMED" } },
+    });
+  };
+
   const placeOrder = async () => {
     try {
       setPlacingOrder(true);
@@ -398,6 +493,19 @@ function Checkout() {
 
       const order = data?.data || data;
       const orderId = order?.id || order?.orderId;
+
+      if (paymentMethod === "RAZORPAY") {
+        try {
+          await startRazorpayPayment(order, token);
+          return;
+        } catch (paymentError) {
+          setError(paymentError.message || "Payment could not be completed. You can retry from My Orders.");
+          navigate(`/order-success/${orderId || "done"}`, {
+            state: { order },
+          });
+          return;
+        }
+      }
 
       navigate(`/order-success/${orderId || "done"}`, {
         state: { order },
@@ -550,16 +658,18 @@ function Checkout() {
                   <span>UPI QR Payment</span>
                 </label>
 
-                <label className="paymentOption">
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="RAZORPAY"
-                    checked={paymentMethod === "RAZORPAY"}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                  />
-                  <span>Debit Card / Card Payment</span>
-                </label>
+                {razorpayEnabled && (
+                  <label className="paymentOption">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="RAZORPAY"
+                      checked={paymentMethod === "RAZORPAY"}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                    />
+                    <span>Online Payment by Razorpay</span>
+                  </label>
+                )}
 
                 <textarea
                   value={customerNote}
@@ -652,8 +762,12 @@ function Checkout() {
                 {items.length === 0
                   ? "Cart is Empty"
                   : placingOrder
-                    ? "Placing Order..."
-                    : "Place Order"}
+                    ? paymentMethod === "RAZORPAY"
+                      ? "Opening Payment..."
+                      : "Placing Order..."
+                    : paymentMethod === "RAZORPAY"
+                      ? "Pay Online"
+                      : "Place Order"}
               </button>
             </aside>
           </div>

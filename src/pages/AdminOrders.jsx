@@ -346,9 +346,9 @@ function AdminOrders() {
                           <button
                             type="button"
                             disabled
-                            title="Online Razorpay gateway is not integrated yet"
+                            title="Razorpay payments are verified automatically by the gateway"
                           >
-                            Card Payment Pending
+                            Gateway Payment Pending
                           </button>
                         )}
 
