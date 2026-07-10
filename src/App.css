@@ -2701,3 +2701,223 @@ select {
     border-radius: 16px;
   }
 }
+
+.referenceFooter {
+  max-width: none;
+  margin: 0;
+  background: #4a2f05;
+  color: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.referenceFooterTop {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(28px, 5vw, 78px);
+  padding: 14px clamp(18px, 5vw, 90px);
+  border-bottom: 1px solid rgba(225, 184, 94, 0.48);
+  background: #4a2f05;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.referenceFooterTop::-webkit-scrollbar {
+  display: none;
+}
+
+.referenceFooterTop a {
+  flex: 0 0 auto;
+  color: #c88d23;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.referenceFooterTop a:hover {
+  color: #f0cf77;
+}
+
+.referenceFooterMain {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.45fr 0.58fr 1.28fr 1.15fr;
+  gap: clamp(34px, 4vw, 62px);
+  padding: 34px clamp(18px, 5vw, 70px) 48px;
+}
+
+.referenceFooter h4 {
+  margin: 0 0 22px;
+  color: #d59b2f;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.referenceFooterBrand img {
+  width: 220px;
+  height: auto;
+  max-width: 100%;
+  object-fit: contain;
+  margin: 0 0 22px;
+}
+
+.referenceFooterBrand p,
+.referenceFooterFind p {
+  margin: 0 0 16px;
+  color: #fff;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.referenceFooterBrand p {
+  max-width: 390px;
+  font-style: italic;
+}
+
+.referenceFooterSocials {
+  display: flex;
+  gap: 13px;
+  margin-top: 20px;
+}
+
+.referenceFooterSocials a {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  border-radius: 50%;
+  color: #d59b2f;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.referenceFooterHelp {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.referenceFooterHelp a,
+.referenceFooterFind a {
+  color: #fff;
+  font-size: 15px;
+  line-height: 1.5;
+  text-decoration: none;
+}
+
+.referenceFooterHelp a {
+  margin-bottom: 14px;
+}
+
+.referenceFooterFind p {
+  position: relative;
+  padding-left: 26px;
+}
+
+.referenceFooterFind p::before,
+.referenceFooterFind a::before {
+  position: absolute;
+  left: 0;
+  color: #f0b529;
+  font-weight: 900;
+}
+
+.referenceFooterFind p::before {
+  content: "●";
+  top: 2px;
+}
+
+.referenceFooterFind strong {
+  color: #d59b2f;
+}
+
+.referenceFooterFind a {
+  position: relative;
+  display: block;
+  margin: 13px 0 0;
+  padding-left: 28px;
+  font-weight: 700;
+}
+
+.referenceFooterFind a[href^="tel"]::before {
+  content: "☎";
+}
+
+.referenceFooterFind a[href^="mailto"]::before {
+  content: "@";
+}
+
+.referenceFooterMap a {
+  display: block;
+  width: 100%;
+  max-width: 340px;
+  height: 250px;
+  overflow: hidden;
+  border: 0;
+  background: #eadfcf;
+}
+
+.referenceFooterMap iframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+}
+
+.referenceFooterBottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 17px 18px 20px;
+  color: #c88d23;
+  text-align: center;
+  font-size: 14px;
+}
+
+.referenceFooterBottom strong {
+  color: #fff;
+}
+
+.referenceFooterBottom span {
+  color: #fff;
+}
+
+@media (max-width: 1040px) {
+  .referenceFooterMain {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .referenceFooterTop {
+    justify-content: flex-start;
+    gap: 26px;
+    min-height: 58px;
+    padding: 11px 18px;
+  }
+
+  .referenceFooterTop a {
+    font-size: 13px;
+  }
+
+  .referenceFooterMain {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding: 28px 22px 36px;
+  }
+
+  .referenceFooterBrand img {
+    width: 190px;
+  }
+
+  .referenceFooterMap a {
+    max-width: none;
+    height: 230px;
+  }
+}

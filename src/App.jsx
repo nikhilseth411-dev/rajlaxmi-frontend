@@ -43,6 +43,8 @@ const CERTIFICATES = {
 };
 
 const SHOP_MAP_URL = "https://maps.app.goo.gl/wvdHLEMdqAJDsCZW8?g_st=ac";
+const SHOP_MAP_EMBED_URL =
+  "https://www.google.com/maps?q=Raj%20Laxmi%20Jewellers%20Near%20Santoshi%20Mata%20Mandir%20Wazirganj%20Gaya%20Bihar%20805131&output=embed";
 
 const HERO_SLIDES = featuredJewellery.slice(0, 10).map((item) => item.image);
 
@@ -183,7 +185,7 @@ function HomePage() {
         <CustomerReviews />
       </main>
 
-      <Footer />
+      <ReferenceFooter />
       <WhatsAppFloat />
     </div>
   );
@@ -905,6 +907,85 @@ function CustomerReviews() {
         ))}
       </div>
     </section>
+  );
+}
+
+function ReferenceFooter() {
+  return (
+    <footer className="referenceFooter">
+      <nav className="referenceFooterTop" aria-label="Footer collections">
+        <Link to={getCategoryPath("New Collection")}>New Collection</Link>
+        <Link to="/products">All Jewelry</Link>
+        <Link to={getCategoryPath("Lockets")}>Charms</Link>
+        <Link to={getCategoryPath("Bracelets")}>Bracelets</Link>
+        <Link to={getCategoryPath("Rings")}>Rings</Link>
+        <Link to={getCategoryPath("Earrings")}>Earrings</Link>
+        <Link to={getCategoryPath("Gifts")}>Gifts</Link>
+        <Link to="#collections">Collections</Link>
+      </nav>
+
+      <div className="referenceFooterMain">
+        <div className="referenceFooterBrand">
+          <img src={shopImages.logo} alt="Raj Laxmi Jewellers" />
+          <p>
+            Raj Laxmi Jewellery offers a premium collection of gold, diamond,
+            and silver jewellery crafted with elegance and precision. Every
+            piece reflects timeless beauty, fine craftsmanship, and a perfect
+            blend of tradition and modern design.
+          </p>
+          <div className="referenceFooterSocials" aria-label="Social links">
+            <a href="https://www.facebook.com/" target="_blank" rel="noreferrer" aria-label="Facebook">f</a>
+            <a href="https://www.instagram.com/" target="_blank" rel="noreferrer" aria-label="Instagram">ig</a>
+            <a href="https://x.com/" target="_blank" rel="noreferrer" aria-label="X">x</a>
+            <a href="https://wa.me/919102316789" target="_blank" rel="noreferrer" aria-label="WhatsApp">wa</a>
+          </div>
+        </div>
+
+        <div className="referenceFooterHelp">
+          <h4>Help</h4>
+          <Link to="/products">Returns</Link>
+          <Link to="/products">Privacy Policy</Link>
+          <Link to="/products">Terms & Conditions</Link>
+          <Link to="/products">Testimonials</Link>
+          <Link to="/products">Helps & FAQ's</Link>
+        </div>
+
+        <div className="referenceFooterFind">
+          <h4>Find Us</h4>
+          <p>
+            <strong>Retail Branch :</strong> Near Santoshi Mata Mandir,
+            Wazirganj, Gaya, Bihar 805131
+          </p>
+          <p>
+            <strong>Main Branch :</strong> Raj Laxmi Jewellers, Bhagwan Das &
+            Sons, Wazirganj, Gaya, Bihar
+          </p>
+          <p>
+            <strong>Gold & Silver Branch :</strong> Raj Laxmi Jewellers,
+            Wazirganj, Gaya, Bihar
+          </p>
+          <a href="tel:+919102316789">+91 91023 16789</a>
+          <a href="mailto:rajlaxmijewellers.gaya@gmail.com">rajlaxmijewellers.gaya@gmail.com</a>
+        </div>
+
+        <div className="referenceFooterMap">
+          <h4>About Us</h4>
+          <a href={SHOP_MAP_URL} target="_blank" rel="noreferrer" aria-label="Open Raj Laxmi Jewellers in Google Maps">
+            <iframe
+              title="Raj Laxmi Jewellers location map"
+              src={SHOP_MAP_EMBED_URL}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </a>
+        </div>
+      </div>
+
+      <div className="referenceFooterBottom">
+        Copyright 2026 <strong>Raj Laxmi Jewellers</strong>. Designed By :
+        <span> Bizfly Technologies</span>
+      </div>
+    </footer>
   );
 }
 
