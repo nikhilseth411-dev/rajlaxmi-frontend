@@ -983,7 +983,7 @@ function ReferenceFooter() {
 
       <div className="referenceFooterBottom">
         Copyright 2026 <strong>Raj Laxmi Jewellers</strong>. Designed By :
-        <span> Bizfly Technologies</span>
+        <span> Nikhil Seth</span>
       </div>
     </footer>
   );
