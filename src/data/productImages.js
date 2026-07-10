@@ -1,7 +1,7 @@
 export const shopImages = {
   logo: "/images/logo/shop-logo.jpeg",
   shopOne: "/images/shop/rajlaxmi-storefront-new.png",
-  shopTwo: "/images/shop/rajlaxmi-storefront-new.png",
+  shopTwo: "/images/shop/dukan_papa.jpeg",
 };
 
 export const collections = [
