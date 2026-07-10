@@ -17,7 +17,7 @@ function CustomerLogin() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const redirect = searchParams.get("redirect") || "/products";
+  const redirect = searchParams.get("redirect") || "/";
 
   const handleChange = (e) => {
     const { name, value } = e.target;

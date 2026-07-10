@@ -2552,3 +2552,152 @@ select {
     height: 60px;
   }
 }
+
+.site .shopCategorySection {
+  overflow: visible;
+}
+
+.site .categoryScroller {
+  justify-content: flex-start;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding-inline: 18px;
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.site .categoryScroller::-webkit-scrollbar {
+  display: none;
+}
+
+.site .bigYear {
+  font-size: clamp(70px, 7vw, 108px);
+  opacity: 0.92;
+}
+
+.site .heritageImage img {
+  object-position: center top;
+}
+
+.site .visitBigImage {
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.site .visitBigImage img {
+  height: clamp(430px, 48vw, 620px);
+  object-fit: cover;
+  object-position: center top;
+  background: #111;
+}
+
+.customerReviews {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 54px clamp(18px, 5vw, 72px) 62px;
+  background: #fff;
+}
+
+.reviewScroller {
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.reviewScroller::-webkit-scrollbar {
+  display: none;
+}
+
+.reviewCard {
+  flex: 0 0 260px;
+  min-height: 168px;
+  padding: 22px;
+  border: 1px solid #f1c7de;
+  border-radius: 20px;
+  background: #ffe2f1;
+  box-shadow: 12px 14px 0 rgba(40, 24, 16, 0.22);
+  scroll-snap-align: start;
+}
+
+.reviewCard div {
+  color: #f59b13;
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+
+.reviewCard h3 {
+  margin: 5px 0 14px;
+  color: #140b07;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 18px;
+  text-transform: uppercase;
+}
+
+.reviewCard p {
+  margin: 0;
+  color: #6b625c;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.footerMapLink {
+  display: grid;
+  gap: 4px;
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid rgba(225, 184, 94, 0.48);
+  color: #f2e4cc;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.footerMapLink span {
+  font-weight: 800;
+}
+
+.footerMapLink small {
+  color: rgba(255, 255, 255, 0.62);
+  line-height: 1.4;
+}
+
+.footerMapLink:hover {
+  border-color: var(--store-gold-light);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+@media (min-width: 1240px) {
+  .site .categoryScroller {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .site .categoryScroller {
+    max-width: 100%;
+    padding-inline: 12px;
+  }
+
+  .site .bigYear {
+    font-size: 62px;
+  }
+
+  .site .visitBigImage img {
+    height: 430px;
+  }
+
+  .customerReviews {
+    padding: 38px 14px 48px;
+  }
+
+  .reviewCard {
+    flex-basis: 78%;
+    border-radius: 16px;
+  }
+}

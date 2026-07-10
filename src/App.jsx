@@ -42,6 +42,8 @@ const CERTIFICATES = {
   bis: "/certificates/bis-certificate.jpeg",
 };
 
+const SHOP_MAP_URL = "https://maps.app.goo.gl/wvdHLEMdqAJDsCZW8?g_st=ac";
+
 const HERO_SLIDES = featuredJewellery.slice(0, 10).map((item) => item.image);
 
 const SHOP_CATEGORIES = [
@@ -178,6 +180,7 @@ function HomePage() {
         <Credentials />
         <GoldRates goldRates={goldRates} />
         <VisitStore />
+        <CustomerReviews />
       </main>
 
       <Footer />
@@ -870,8 +873,36 @@ function VisitStore() {
             <a href="tel:+919102316789" className="btn btnOutline">
               Call Now
             </a>
+            <a href={SHOP_MAP_URL} target="_blank" rel="noreferrer" className="btn btnOutline">
+              Open Map
+            </a>
           </div>
         </div>
+      </div>
+    </section>
+  );
+}
+
+function CustomerReviews() {
+  const reviews = [
+    ["Excellent collection", "Beautiful gold designs, honest pricing, and very polite shop guidance."],
+    ["Trusted family shop", "We liked the transparent weight and rate details before buying."],
+    ["Lovely designs", "The jewellery finishing is premium and the staff explains everything clearly."],
+    ["Good service", "Quick support on WhatsApp and a smooth visit at the store."],
+    ["Recommended", "A reliable local jeweller for gold and silver jewellery in Wazirganj."],
+  ];
+
+  return (
+    <section className="customerReviews">
+      <SectionHeading eyebrow="Customer Trust" title="Customer Reviews" />
+      <div className="reviewScroller">
+        {reviews.map(([title, text]) => (
+          <article className="reviewCard" key={title}>
+            <div aria-label="5 star review">★★★★★</div>
+            <h3>{title}</h3>
+            <p>{text}</p>
+          </article>
+        ))}
       </div>
     </section>
   );
@@ -905,9 +936,13 @@ function Footer() {
 
       <div>
         <h4>Contact Us</h4>
-        <p>Wazirganj, Gaya, Bihar</p>
+        <p>Near Santoshi Mata Mandir, Wazirganj, Gaya, Bihar 805131</p>
         <p>+91 91023 16789</p>
         <p>rajlaxmijewellers.gaya@gmail.com</p>
+        <a className="footerMapLink" href={SHOP_MAP_URL} target="_blank" rel="noreferrer">
+          <span>Open shop location in Google Maps</span>
+          <small>Near Santoshi Mata Mandir, Wazirganj</small>
+        </a>
       </div>
     </footer>
   );

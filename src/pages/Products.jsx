@@ -124,7 +124,7 @@ function Products() {
     requestedSearch || (requestedCategory && !initialCategoryFilter ? requestedCategory : ""),
   );
   const [metalType, setMetalType] = useState("");
-  const [goldPurity, setGoldPurity] = useState("");
+  const [selectedPurities, setSelectedPurities] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState(initialCategoryFilter);
   const [priceFilter, setPriceFilter] = useState("");
   const [loading, setLoading] = useState(false);
@@ -135,14 +135,19 @@ function Products() {
     categoryOptions.find((option) => option.value === categoryFilter)?.name ||
     requestedCategory;
   const selectedPriceRange = PRICE_RANGES.find((range) => range.value === priceFilter);
-  const visibleProducts = selectedPriceRange
-    ? products.filter((product) => {
+  const visibleProducts = products
+    .filter((product) => {
+      if (selectedPurities.length === 0) return true;
+      return String(product.goldPurity || "").toUpperCase()
+        && selectedPurities.includes(String(product.goldPurity || "").toUpperCase());
+    })
+    .filter((product) => {
+      if (!selectedPriceRange) return true;
         const price = Number(product.finalPrice);
         if (!Number.isFinite(price)) return false;
         if (selectedPriceRange.max === null) return price > selectedPriceRange.min;
         return price >= selectedPriceRange.min && price <= selectedPriceRange.max;
-      })
-    : products;
+    });
 
   const getImageUrl = (imageUrl) => {
     if (!imageUrl) return "/images/placeholders/jewellery-display.webp";
@@ -169,7 +174,8 @@ function Products() {
   const fetchProducts = async (overrides = {}) => {
     const activeKeyword = overrides.keyword ?? keyword;
     const activeMetalType = overrides.metalType ?? metalType;
-    const activeGoldPurity = overrides.goldPurity ?? goldPurity;
+    const activeSelectedPurities = overrides.selectedPurities ?? selectedPurities;
+    const activeGoldPurity = activeSelectedPurities.length === 1 ? activeSelectedPurities[0] : "";
     const activeCategoryFilter = overrides.categoryFilter ?? categoryFilter;
 
     try {
@@ -232,6 +238,7 @@ function Products() {
         metalType: "",
         goldPurity: "",
         categoryFilter: resolvedFilter,
+        selectedPurities: [],
       });
     }
 
@@ -248,14 +255,25 @@ function Products() {
     fetchProducts();
   };
 
+  const toggleGoldPurity = (purity) => {
+    setSelectedPurities((current) => {
+      const normalized = purity.toUpperCase();
+      if (current.includes(normalized)) {
+        return current.filter((item) => item !== normalized);
+      }
+      if (metalType && metalType !== "GOLD") setMetalType("GOLD");
+      return [...current, normalized];
+    });
+  };
+
   const resetFilters = () => {
     setKeyword("");
     setMetalType("");
-    setGoldPurity("");
+    setSelectedPurities([]);
     setCategoryFilter("");
     setPriceFilter("");
     setSearchParams({});
-    fetchProducts({ keyword: "", metalType: "", goldPurity: "", categoryFilter: "" });
+    fetchProducts({ keyword: "", metalType: "", selectedPurities: [], categoryFilter: "" });
   };
 
   return (
@@ -318,18 +336,23 @@ function Products() {
           </div>
 
           <div className="filterField filterPurityField">
-            <label htmlFor="product-purity">Gold purity</label>
-            <select
-              id="product-purity"
-              value={goldPurity}
-              onChange={(event) => setGoldPurity(event.target.value)}
-              disabled={metalType === "SILVER"}
-            >
-              <option value="">All Purities</option>
-              <option value="GOLD_18K">18 Karat</option>
-              <option value="GOLD_22K">22 Karat</option>
-              <option value="GOLD_24K">24 Karat</option>
-            </select>
+            <label>Gold purity</label>
+            <div className="purityCheckboxGroup">
+              {[
+                ["GOLD_18K", "18K"],
+                ["GOLD_22K", "22K"],
+              ].map(([value, label]) => (
+                <label key={value}>
+                  <input
+                    type="checkbox"
+                    checked={selectedPurities.includes(value)}
+                    onChange={() => toggleGoldPurity(value)}
+                    disabled={metalType === "SILVER"}
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
           </div>
 
           <button type="submit" disabled={loading}>

@@ -25,9 +25,9 @@ function Checkout() {
     phone: "",
     streetAddress: "",
     landmark: "",
-    city: "Gaya",
-    district: "Gaya",
-    state: "Bihar",
+    city: "",
+    district: "",
+    state: "",
     pincode: "",
     addressType: "HOME",
     isDefault: true,
@@ -502,7 +502,7 @@ function Checkout() {
                     name="city"
                     value={addressForm.city}
                     onChange={handleAddressChange}
-                    placeholder="City"
+                    placeholder="City, for example Gaya"
                     required
                   />
 
@@ -510,7 +510,7 @@ function Checkout() {
                     name="district"
                     value={addressForm.district}
                     onChange={handleAddressChange}
-                    placeholder="District"
+                    placeholder="District, for example Gaya"
                     required
                   />
 
@@ -518,7 +518,7 @@ function Checkout() {
                     name="state"
                     value={addressForm.state}
                     onChange={handleAddressChange}
-                    placeholder="State"
+                    placeholder="State, for example Bihar"
                     required
                   />
 
